@@ -1,17 +1,14 @@
 # diasole
 
-A new Flutter project.
+A Flutter project to build an mobile app to analyze & monitor foot health , done in collaboration with PSG IMS&R, Coimbatore.
 
 ## Getting Started
+Step 1: Fork your own copy of the repo.
+Step 2: Make sure flutter is installed in your PC and run '''flutter pub get''' to install all dependencies defined in pubspec.yaml
+Step 3: Run '''flutter run''' to run and preview the app.
 
-This project is a starting point for a Flutter application.
+Additional commands: 
+1. '''flutter doctor''' to check the status of your flutter installation
+2. '''flutter devices''' to list all available devices/emulators to run the app on.
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
