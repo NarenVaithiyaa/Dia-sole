@@ -1,14 +1,29 @@
 # diasole
 
-A Flutter project to build an mobile app to analyze & monitor foot health , done in collaboration with PSG IMS&R, Coimbatore.
+A Flutter project to build a mobile app to analyze & monitor foot health, done in collaboration with **PSG IMS&R, Coimbatore**.
+
+---
 
 ## Getting Started
-Step 1: Fork your own copy of the repo.
-Step 2: Make sure flutter is installed in your PC and run '''flutter pub get''' to install all dependencies defined in pubspec.yaml
-Step 3: Run '''flutter run''' to run and preview the app.
 
-Additional commands: 
-1. '''flutter doctor''' to check the status of your flutter installation
-2. '''flutter devices''' to list all available devices/emulators to run the app on.
+1. **Fork** your own copy of the repository.
 
+2. Make sure **Flutter** is installed on your PC and run:
 
+   ```bash
+   flutter pub get
+
+This installs all dependencies defined in pubspec.yaml.
+
+Run the following command to launch the app:
+
+flutter run
+Additional Commands
+
+Check the status of your Flutter installation:
+
+flutter doctor
+
+List all available devices or emulators:
+
+flutter devices
