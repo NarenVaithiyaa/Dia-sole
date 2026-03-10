@@ -8,9 +8,7 @@ Step 2: Make sure flutter is installed in your PC and run '''flutter pub get''' 
 Step 3: Run '''flutter run''' to run and preview the app.
 
 Additional commands: 
-1. ```bash 
-flutter doctor 
-to check the status of your flutter installation
+1. '''flutter doctor''' to check the status of your flutter installation
 2. '''flutter devices''' to list all available devices/emulators to run the app on.
 
 
