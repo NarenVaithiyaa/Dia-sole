@@ -3,18 +3,42 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import '../models/sync_config.dart';
+import '../models/sensor_reading.dart';
+import 'sensor_reading_repository.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    print("Native called background task: $task");
-    print("Fetching sensor data via Bluetooth...");
+    print("[SyncSchedulerService] Background sync task triggered: $task");
 
-    // Simulate some work
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Get the repository and check for readings to sync
+      final repository = SensorReadingRepository();
+      final readingCount = await repository.getTotalReadingCount();
+      print("[SyncSchedulerService] Found $readingCount readings to sync");
 
-    print("Data synced successfully");
-    return Future.value(true);
+      if (readingCount > 0) {
+        // Export recent readings for sync
+        final yesterday = DateTime.now().subtract(const Duration(days: 1));
+        final readings = await repository.getReadingsByTimeRange(
+          DeviceSide.left,
+          yesterday,
+          DateTime.now(),
+        );
+        print("[SyncSchedulerService] Exporting ${readings.length} left-foot readings from last 24h");
+
+        // In a real app, you would upload `readings` to a backend server here.
+        // For now, we just log the export.
+        // final json = readings.map((r) => r.toJson()).toList();
+        // await uploadToBackend(json);
+      }
+
+      print("[SyncSchedulerService] Sync task completed successfully");
+      return Future.value(true);
+    } catch (e) {
+      print("[SyncSchedulerService] Sync task error: $e");
+      return Future.value(false);
+    }
   });
 }
 

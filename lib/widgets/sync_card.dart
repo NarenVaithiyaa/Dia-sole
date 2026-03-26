@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/sync_config.dart';
-import '../services/bluetooth_service.dart' as local_bt;
+import '../services/bluetooth_service.dart';
 import '../services/sync_scheduler_service.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -36,7 +36,7 @@ class _SyncCardState extends State<SyncCard> {
   }
 
   Future<void> _checkBluetoothAndLoadConfig() async {
-    final isOn = await local_bt.BluetoothService.isBluetoothOn();
+    final isOn = await DiaSoleBluetoothService.isBluetoothOn();
     setState(() {
       _isBluetoothOn = isOn;
     });
@@ -55,7 +55,7 @@ class _SyncCardState extends State<SyncCard> {
   }
 
   Future<void> _saveConfig() async {
-    final isOn = await local_bt.BluetoothService.isBluetoothOn();
+    final isOn = await DiaSoleBluetoothService.isBluetoothOn();
     if (!isOn) {
       _showBluetoothWarning();
       return;

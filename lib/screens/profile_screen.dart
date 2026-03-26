@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
 import '../widgets/primary_button.dart';
+import '../services/sensor_data_provider.dart';
+import '../services/ble_types.dart';
+import '../models/sensor_reading.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  List<BleScannedDevice> _scannedDevices = [];
 
   @override
   Widget build(BuildContext context) {
@@ -129,32 +141,64 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _requestBluetoothPermission(BuildContext context) {
+  Future<void> _requestBluetoothPermission(BuildContext context) async {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Enable Bluetooth"),
-        content: const Text(
-          "DiaSole needs Bluetooth access to find and connect to your insoles.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Deny"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _scanForDevices(context);
-            },
-            child: const Text("Allow"),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (ctx) => const Center(child: CircularProgressIndicator()),
     );
+
+    try {
+      final statuses = await [
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+        Permission.locationWhenInUse,
+      ].request();
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      final scanGranted = statuses[Permission.bluetoothScan]?.isGranted ?? false;
+      final connectGranted = statuses[Permission.bluetoothConnect]?.isGranted ?? false;
+      final locationGranted = statuses[Permission.locationWhenInUse]?.isGranted ?? false;
+
+      if (scanGranted && connectGranted) {
+        _scanForDevices(context);
+        return;
+      }
+
+      // Some devices/OS versions still require location for BLE scan
+      if ((scanGranted || connectGranted) && locationGranted) {
+        _scanForDevices(context);
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Bluetooth permissions are required to scan for insoles. Please allow Bluetooth and Location permissions.',
+          ),
+          backgroundColor: Colors.red,
+          action: SnackBarAction(
+            label: 'Settings',
+            textColor: Colors.white,
+            onPressed: openAppSettings,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Permission request failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _scanForDevices(BuildContext context) {
+  void _scanForDevices(BuildContext context) async {
     // Show scanning dialog
     showDialog(
       context: context,
@@ -168,7 +212,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
-                Text("Scanning for nearby devices..."),
+                Text("Scanning for nearby insoles..."),
               ],
             ),
           ),
@@ -176,15 +220,57 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
 
-    // Simulate scanning network/bluetooth delay
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!context.mounted) return;
+    try {
+      final provider = context.read<SensorDataProvider>();
+      final devices = await provider.scanForDevices();
+
+      if (!mounted) return;
       Navigator.of(context).pop(); // Close scanning dialog
+
+      setState(() {
+        _scannedDevices = devices;
+      });
+
       _showDeviceList(context);
-    });
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close scanning dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Scan failed: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showDeviceList(BuildContext context) {
+    if (_scannedDevices.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text("No Devices Found"),
+          content: const Text(
+            "No DiaSole insoles were found. Make sure they are powered on and in pairing mode.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("OK"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _scanForDevices(context);
+              },
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -192,47 +278,100 @@ class ProfileScreen extends StatelessWidget {
       ),
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Select Device",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            _buildDeviceTile(
-              ctx,
-              "DiaSole Left Insole",
-              "Signal Strength: Strong",
-            ),
-            _buildDeviceTile(
-              ctx,
-              "DiaSole Right Insole",
-              "Signal Strength: Good",
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Select Insole to Connect",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ..._scannedDevices.map((device) {
+                final sideLabel = device.identifiedSide?.name ?? "Unknown";
+                final subtitle = "Signal: ${device.rssi} dBm | Side: $sideLabel";
+                return _buildDeviceListTile(ctx, device, subtitle);
+              }).toList(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDeviceTile(BuildContext context, String name, String subtitle) {
+  Widget _buildDeviceListTile(BuildContext context, BleScannedDevice device, String subtitle) {
     return ListTile(
       leading: const Icon(Icons.bluetooth, color: AppTheme.primaryBlue),
-      title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(device.name, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
       onTap: () {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Connected to $name"),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        _connectToDevice(context, device);
       },
     );
+  }
+
+  void _connectToDevice(BuildContext context, BleScannedDevice device) {
+    // Determine which side to assign
+    var selectedSide = device.identifiedSide;
+    if (selectedSide == null) {
+      // Ask user to manually select side
+      _showSideSelectionDialog(context, device);
+    } else {
+      // Auto-assign based on identified side
+      _performConnection(context, device, selectedSide);
+    }
+  }
+
+  void _showSideSelectionDialog(BuildContext context, BleScannedDevice device) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Select Foot Side"),
+        content: Text("Which foot is ${device.name} for?"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _performConnection(context, device, DeviceSide.left);
+            },
+            child: const Text("Left Foot"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _performConnection(context, device, DeviceSide.right);
+            },
+            child: const Text("Right Foot"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _performConnection(BuildContext context, BleScannedDevice device, DeviceSide side) async {
+    try {
+      final provider = context.read<SensorDataProvider>();
+      await provider.connectToDevice(device.device, side);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Connected to ${device.name} as ${side.name}"),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Connection failed: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildOptionTile(
