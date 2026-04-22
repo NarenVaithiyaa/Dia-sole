@@ -39,11 +39,13 @@ class DiaSoleBluetoothService {
   };
 
   // Controllers for exposing state and data streams
-  final _connectionStateController = StreamController<BleConnectionEvent>.broadcast();
+  final _connectionStateController =
+      StreamController<BleConnectionEvent>.broadcast();
   final _sensorDataStream = StreamController<SensorReading>.broadcast();
 
   // Public stream accessors
-  Stream<BleConnectionEvent> get connectionStateStream => _connectionStateController.stream;
+  Stream<BleConnectionEvent> get connectionStateStream =>
+      _connectionStateController.stream;
   Stream<SensorReading> get sensorDataStream => _sensorDataStream.stream;
 
   /// Check if Bluetooth adapter is available and turned on
@@ -59,7 +61,9 @@ class DiaSoleBluetoothService {
   }
 
   /// Scan for nearby BLE devices and return those matching DiaSole naming convention or side markers.
-  Future<List<BleScannedDevice>> scanForDevices({Duration timeout = const Duration(seconds: 10)}) async {
+  Future<List<BleScannedDevice>> scanForDevices({
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
     if (kIsWeb) {
       print('$_tag Scan requested on web; returning empty list.');
       return [];
@@ -75,7 +79,7 @@ class DiaSoleBluetoothService {
       await for (final results in resultStream) {
         for (final result in results) {
           final device = result.device;
-          final name = device.platformName ?? 'Unknown';
+          final name = device.platformName;
 
           // Attempt to identify side from advertisement (extract from advertisementData)
           final manufacturerData = result.advertisementData.manufacturerData;
@@ -86,13 +90,17 @@ class DiaSoleBluetoothService {
 
           // Include if it looks like a DiaSole device (name contains "DiaSole" or side identified)
           if (name.contains('DiaSole') || identifiedSide != null) {
-            devices.add(BleScannedDevice(
-              device: device,
-              name: name,
-              rssi: result.rssi,
-              identifiedSide: identifiedSide,
-            ));
-            print('$_tag Found device: $name (side: ${identifiedSide?.name ?? "unknown"}), RSSI: ${result.rssi}');
+            devices.add(
+              BleScannedDevice(
+                device: device,
+                name: name,
+                rssi: result.rssi,
+                identifiedSide: identifiedSide,
+              ),
+            );
+            print(
+              '$_tag Found device: $name (side: ${identifiedSide?.name ?? "unknown"}), RSSI: ${result.rssi}',
+            );
           }
         }
       }
@@ -126,26 +134,35 @@ class DiaSoleBluetoothService {
       await _subscribeToTelemetryCharacteristics(device, side);
     } catch (e) {
       print('$_tag Connection error for $side: $e');
-      _emitConnectionEvent(side, BleConnectionStatus.disconnected, error: e.toString());
+      _emitConnectionEvent(
+        side,
+        BleConnectionStatus.disconnected,
+        error: e.toString(),
+      );
       await _attemptReconnect(device, side);
     }
   }
 
   /// Subscribe to pressure and temperature characteristics from a device.
-  Future<void> _subscribeToTelemetryCharacteristics(BluetoothDevice device, DeviceSide side) async {
+  Future<void> _subscribeToTelemetryCharacteristics(
+    BluetoothDevice device,
+    DeviceSide side,
+  ) async {
     try {
       final services = await device.discoverServices();
       print('$_tag Discovered ${services.length} services on $side device');
 
       for (final service in services) {
         // Look for telemetry service
-        if (service.uuid.toString().toUpperCase() == BleProtocol.telemetryServiceUuid.toUpperCase() ||
+        if (service.uuid.toString().toUpperCase() ==
+                BleProtocol.telemetryServiceUuid.toUpperCase() ||
             service.uuid.toString().toUpperCase().contains('181a')) {
           print('$_tag Found telemetry service on $side');
 
           for (final characteristic in service.characteristics) {
             // Subscribe to pressure notifications
-            if (characteristic.uuid.toString().toUpperCase() == BleProtocol.pressureCharacteristicUuid.toUpperCase() ||
+            if (characteristic.uuid.toString().toUpperCase() ==
+                    BleProtocol.pressureCharacteristicUuid.toUpperCase() ||
                 characteristic.uuid.toString().toUpperCase().contains('2a58')) {
               if (characteristic.properties.notify) {
                 await characteristic.setNotifyValue(true);
@@ -158,7 +175,8 @@ class DiaSoleBluetoothService {
             }
 
             // Subscribe to temperature notifications
-            if (characteristic.uuid.toString().toUpperCase() == BleProtocol.temperatureCharacteristicUuid.toUpperCase() ||
+            if (characteristic.uuid.toString().toUpperCase() ==
+                    BleProtocol.temperatureCharacteristicUuid.toUpperCase() ||
                 characteristic.uuid.toString().toUpperCase().contains('2a1c')) {
               if (characteristic.properties.notify) {
                 await characteristic.setNotifyValue(true);
@@ -166,7 +184,9 @@ class DiaSoleBluetoothService {
                   _handleTemperatureReading(value, side);
                 });
                 _subscriptions[side]!.add(sub);
-                print('$_tag Subscribed to temperature notifications for $side');
+                print(
+                  '$_tag Subscribed to temperature notifications for $side',
+                );
               }
             }
           }
@@ -174,7 +194,11 @@ class DiaSoleBluetoothService {
       }
     } catch (e) {
       print('$_tag Error discovering services or subscribing on $side: $e');
-      _emitConnectionEvent(side, BleConnectionStatus.error, error: e.toString());
+      _emitConnectionEvent(
+        side,
+        BleConnectionStatus.error,
+        error: e.toString(),
+      );
     }
   }
 
@@ -183,7 +207,7 @@ class DiaSoleBluetoothService {
     try {
       // For now, use a simple round-robin zone assignment: cycle through heel, ball, toe
       final now = DateTime.now().toUtc();
-      
+
       // Parse three pressure values (heel, ball, toe) from characteristic
       // Stub format: 6 bytes = 3 × uint16 (little-endian)
       if (rawData.length >= 6) {
@@ -206,14 +230,19 @@ class DiaSoleBluetoothService {
   void _handleTemperatureReading(List<int> rawData, DeviceSide side) {
     try {
       final now = DateTime.now().toUtc();
-      
+
       // Parse three temperature values (heel, ball, toe) from characteristic
       // Stub format: 3 bytes = 3 × uint8
       if (rawData.length >= 3) {
         final zones = [SensorZone.heel, SensorZone.ball, SensorZone.toe];
         for (int i = 0; i < 3; i++) {
           final zoneData = [rawData[i]];
-          final reading = _parser.parseTemperature(zoneData, side, zones[i], now);
+          final reading = _parser.parseTemperature(
+            zoneData,
+            side,
+            zones[i],
+            now,
+          );
           if (reading != null) {
             _sensorDataStream.add(reading);
           }
@@ -225,7 +254,10 @@ class DiaSoleBluetoothService {
   }
 
   /// Attempt to reconnect to a device with exponential backoff
-  Future<void> _attemptReconnect(BluetoothDevice device, DeviceSide side) async {
+  Future<void> _attemptReconnect(
+    BluetoothDevice device,
+    DeviceSide side,
+  ) async {
     if (_reconnectAttempts[side]! >= _maxReconnectAttempts) {
       print('$_tag Max reconnect attempts reached for $side; giving up.');
       _emitConnectionEvent(side, BleConnectionStatus.disconnected);
@@ -233,7 +265,9 @@ class DiaSoleBluetoothService {
     }
 
     _reconnectAttempts[side] = _reconnectAttempts[side]! + 1;
-    print('$_tag Reconnecting to $side (attempt ${_reconnectAttempts[side]})...');
+    print(
+      '$_tag Reconnecting to $side (attempt ${_reconnectAttempts[side]})...',
+    );
 
     await Future.delayed(_reconnectDelay);
     try {
@@ -270,13 +304,19 @@ class DiaSoleBluetoothService {
   }
 
   /// Emit a connection state event
-  void _emitConnectionEvent(DeviceSide side, BleConnectionStatus status, {String? error}) {
-    _connectionStateController.add(BleConnectionEvent(
-      side: side,
-      status: status,
-      timestamp: DateTime.now().toUtc(),
-      error: error,
-    ));
+  void _emitConnectionEvent(
+    DeviceSide side,
+    BleConnectionStatus status, {
+    String? error,
+  }) {
+    _connectionStateController.add(
+      BleConnectionEvent(
+        side: side,
+        status: status,
+        timestamp: DateTime.now().toUtc(),
+        error: error,
+      ),
+    );
   }
 
   /// Get current connection status for a side

@@ -158,21 +158,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       Navigator.of(context).pop();
 
-      final scanGranted = statuses[Permission.bluetoothScan]?.isGranted ?? false;
-      final connectGranted = statuses[Permission.bluetoothConnect]?.isGranted ?? false;
-      final locationGranted = statuses[Permission.locationWhenInUse]?.isGranted ?? false;
+      final scanGranted =
+          statuses[Permission.bluetoothScan]?.isGranted ?? false;
+      final connectGranted =
+          statuses[Permission.bluetoothConnect]?.isGranted ?? false;
+      final locationGranted =
+          statuses[Permission.locationWhenInUse]?.isGranted ?? false;
 
       if (scanGranted && connectGranted) {
+        if (!mounted) return;
         _scanForDevices(context);
         return;
       }
 
       // Some devices/OS versions still require location for BLE scan
       if ((scanGranted || connectGranted) && locationGranted) {
+        if (!mounted) return;
         _scanForDevices(context);
         return;
       }
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -236,10 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       Navigator.of(context).pop(); // Close scanning dialog
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Scan failed: $e"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Scan failed: $e"), backgroundColor: Colors.red),
       );
     }
   }
@@ -290,9 +293,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               ..._scannedDevices.map((device) {
                 final sideLabel = device.identifiedSide?.name ?? "Unknown";
-                final subtitle = "Signal: ${device.rssi} dBm | Side: $sideLabel";
+                final subtitle =
+                    "Signal: ${device.rssi} dBm | Side: $sideLabel";
                 return _buildDeviceListTile(ctx, device, subtitle);
-              }).toList(),
+              }),
             ],
           ),
         ),
@@ -300,10 +304,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDeviceListTile(BuildContext context, BleScannedDevice device, String subtitle) {
+  Widget _buildDeviceListTile(
+    BuildContext context,
+    BleScannedDevice device,
+    String subtitle,
+  ) {
     return ListTile(
       leading: const Icon(Icons.bluetooth, color: AppTheme.primaryBlue),
-      title: Text(device.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(
+        device.name,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
       onTap: () {
         Navigator.pop(context);
@@ -350,7 +361,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _performConnection(BuildContext context, BleScannedDevice device, DeviceSide side) async {
+  void _performConnection(
+    BuildContext context,
+    BleScannedDevice device,
+    DeviceSide side,
+  ) async {
     try {
       final provider = context.read<SensorDataProvider>();
       await provider.connectToDevice(device.device, side);

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "594151975677",
+    "firebase_url": "https://diasole-smartshoe-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "diasole-smartshoe",
+    "storage_bucket": "diasole-smartshoe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594151975677:android:f83d8abd101f2458f96c94",
+        "android_client_info": {
+          "package_name": "com.diasole.diasole"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAm9JsuN3BhniJI4QFFbyN76HPzgmCzNCM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,23 +4,18 @@ enum SyncType { daily, weekly, monthly }
 
 class SyncConfig {
   SyncType type;
+  TimeOfDay time;
   String? day;
   int? date;
-  TimeOfDay time;
 
-  SyncConfig({
-    required this.type,
-    this.day,
-    this.date,
-    required this.time,
-  });
+  SyncConfig({required this.type, required this.time, this.day, this.date});
 
   Map<String, dynamic> toJson() {
     return {
       'type': type.name,
+      'time': '${time.hour}:${time.minute.toString().padLeft(2, '0')}',
       'day': day,
       'date': date,
-      'time': '${time.hour}:${time.minute.toString().padLeft(2, '0')}',
     };
   }
 
@@ -31,12 +26,12 @@ class SyncConfig {
         (e) => e.name == json['type'],
         orElse: () => SyncType.daily,
       ),
-      day: json['day'],
-      date: json['date'],
       time: TimeOfDay(
         hour: int.parse(timeParts[0]),
         minute: int.parse(timeParts[1]),
       ),
+      day: json['day'],
+      date: json['date'],
     );
   }
 }

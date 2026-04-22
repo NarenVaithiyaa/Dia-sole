@@ -7,28 +7,52 @@ class FootPressureWidget extends StatelessWidget {
   final double pressureLeftBall;
   final double pressureRightHeel;
   final double pressureRightToe;
+  final double pressureLeftOppositeHeel;
+  final double pressureLeftOppositeToe;
+  final double pressureLeftOppositeBall;
+  final double pressureRightOppositeHeel;
+  final double pressureRightOppositeToe;
+  final double pressureRightOppositeBall;
   final double pressureRightBall;
   final double tempLeftHeel;
   final double tempLeftToe;
   final double tempLeftBall;
+  final double tempLeftOppositeHeel;
+  final double tempLeftOppositeToe;
+  final double tempLeftOppositeBall;
   final double tempRightHeel;
   final double tempRightToe;
   final double tempRightBall;
+  final double tempRightOppositeHeel;
+  final double tempRightOppositeToe;
+  final double tempRightOppositeBall;
 
   const FootPressureWidget({
     super.key,
     this.pressureLeftHeel = 0.5,
     this.pressureLeftToe = 0.3,
     this.pressureLeftBall = 0.4,
+    this.pressureLeftOppositeHeel = 0.5,
+    this.pressureLeftOppositeToe = 0.3,
+    this.pressureLeftOppositeBall = 0.4,
     this.pressureRightHeel = 0.8,
     this.pressureRightToe = 0.4,
     this.pressureRightBall = 0.5,
+    this.pressureRightOppositeHeel = 0.8,
+    this.pressureRightOppositeToe = 0.4,
+    this.pressureRightOppositeBall = 0.5,
     this.tempLeftHeel = 36.5,
     this.tempLeftToe = 36.6,
     this.tempLeftBall = 36.6,
+    this.tempLeftOppositeHeel = 36.5,
+    this.tempLeftOppositeToe = 36.6,
+    this.tempLeftOppositeBall = 36.6,
     this.tempRightHeel = 37.0,
     this.tempRightToe = 36.8,
     this.tempRightBall = 36.9,
+    this.tempRightOppositeHeel = 37.0,
+    this.tempRightOppositeToe = 36.8,
+    this.tempRightOppositeBall = 36.9,
   });
 
   @override
@@ -54,9 +78,15 @@ class FootPressureWidget extends StatelessWidget {
                       pressureHeel: pressureLeftHeel,
                       pressureToe: pressureLeftToe,
                       pressureBall: pressureLeftBall,
+                      pressureOppositeHeel: pressureLeftOppositeHeel,
+                      pressureOppositeToe: pressureLeftOppositeToe,
+                      pressureOppositeBall: pressureLeftOppositeBall,
                       tempHeel: tempLeftHeel,
                       tempToe: tempLeftToe,
                       tempBall: tempLeftBall,
+                      tempOppositeHeel: tempLeftOppositeHeel,
+                      tempOppositeToe: tempLeftOppositeToe,
+                      tempOppositeBall: tempLeftOppositeBall,
                     ),
                   ),
                 ),
@@ -68,9 +98,15 @@ class FootPressureWidget extends StatelessWidget {
                     pressureHeel: pressureRightHeel,
                     pressureToe: pressureRightToe,
                     pressureBall: pressureRightBall,
+                    pressureOppositeHeel: pressureRightOppositeHeel,
+                    pressureOppositeToe: pressureRightOppositeToe,
+                    pressureOppositeBall: pressureRightOppositeBall,
                     tempHeel: tempRightHeel,
                     tempToe: tempRightToe,
                     tempBall: tempRightBall,
+                    tempOppositeHeel: tempRightOppositeHeel,
+                    tempOppositeToe: tempRightOppositeToe,
+                    tempOppositeBall: tempRightOppositeBall,
                   ),
                 ),
               ],
@@ -263,9 +299,15 @@ class RightFootWidget extends StatelessWidget {
   final double pressureHeel;
   final double pressureToe;
   final double pressureBall;
+  final double pressureOppositeHeel;
+  final double pressureOppositeToe;
+  final double pressureOppositeBall;
   final double tempHeel;
   final double tempToe;
   final double tempBall;
+  final double tempOppositeHeel;
+  final double tempOppositeToe;
+  final double tempOppositeBall;
 
   const RightFootWidget({
     super.key,
@@ -273,9 +315,15 @@ class RightFootWidget extends StatelessWidget {
     required this.pressureHeel,
     required this.pressureToe,
     required this.pressureBall,
+    required this.pressureOppositeHeel,
+    required this.pressureOppositeToe,
+    required this.pressureOppositeBall,
     required this.tempHeel,
     required this.tempToe,
     required this.tempBall,
+    required this.tempOppositeHeel,
+    required this.tempOppositeToe,
+    required this.tempOppositeBall,
   });
 
   @override
@@ -297,6 +345,16 @@ class RightFootWidget extends StatelessWidget {
 
           const double heelX = 0.50; // Heel center
           const double heelY = 0.85;
+          
+          // Exactly Opposite Places
+          const double oppToeX = 0.75; 
+          const double oppToeY = 0.18;
+          
+          const double oppBallX = 0.75; 
+          const double oppBallY = 0.35;
+          
+          const double oppHeelX = 0.50; 
+          const double oppHeelY = 0.55;
 
           return Stack(
             clipBehavior: Clip.none,
@@ -308,38 +366,17 @@ class RightFootWidget extends StatelessWidget {
               _buildHeatmap(w, h, toeX, toeY, pressureToe),
               _buildHeatmap(w, h, ballX, ballY, pressureBall),
               _buildHeatmap(w, h, heelX, heelY, pressureHeel),
+              _buildHeatmap(w, h, oppToeX, oppToeY, pressureOppositeToe),
+              _buildHeatmap(w, h, oppBallX, oppBallY, pressureOppositeBall),
+              _buildHeatmap(w, h, oppHeelX, oppHeelY, pressureOppositeHeel),
 
               // 3. Sensor Anchors
-              _buildSensor(
-                context,
-                w,
-                h,
-                toeX,
-                toeY,
-                pressureToe,
-                tempToe,
-                "Toe",
-              ),
-              _buildSensor(
-                context,
-                w,
-                h,
-                ballX,
-                ballY,
-                pressureBall,
-                tempBall,
-                "Ball",
-              ),
-              _buildSensor(
-                context,
-                w,
-                h,
-                heelX,
-                heelY,
-                pressureHeel,
-                tempHeel,
-                "Heel",
-              ),
+              _buildSensor(context, w, h, toeX, toeY, pressureToe, tempToe, "Toe"),
+              _buildSensor(context, w, h, ballX, ballY, pressureBall, tempBall, "Ball"),
+              _buildSensor(context, w, h, heelX, heelY, pressureHeel, tempHeel, "Heel"),
+              _buildSensor(context, w, h, oppToeX, oppToeY, pressureOppositeToe, tempOppositeToe, "OpToe"),
+              _buildSensor(context, w, h, oppBallX, oppBallY, pressureOppositeBall, tempOppositeBall, "OpBall"),
+              _buildSensor(context, w, h, oppHeelX, oppHeelY, pressureOppositeHeel, tempOppositeHeel, "OpHeel"),
             ],
           );
         },
@@ -354,10 +391,12 @@ class RightFootWidget extends StatelessWidget {
     double dy,
     double pressure,
   ) {
-    if (pressure <= 0.1) return const SizedBox();
+    if (pressure <= 10.0) return const SizedBox();
+
+    double normalizedPressure = (pressure / 100.0).clamp(0.0, 1.0);
 
     // Heatmap bloom size based strictly on widget width and pressure value
-    double size = w * 0.9 * pressure;
+    double size = w * 0.9 * normalizedPressure;
 
     return Positioned(
       left: (dx * w) - (size / 2),
@@ -369,15 +408,14 @@ class RightFootWidget extends StatelessWidget {
           shape: BoxShape.circle,
           gradient: RadialGradient(
             colors: [
-              Colors.red.withValues(alpha: 0.6 * pressure),
-              Colors.orange.withValues(alpha: 0.4 * pressure),
-              Colors.yellow.withValues(alpha: 0.2 * pressure),
+              Colors.red.withValues(alpha: 0.6 * normalizedPressure),
+              Colors.orange.withValues(alpha: 0.4 * normalizedPressure),
+              Colors.yellow.withValues(alpha: 0.2 * normalizedPressure),
               Colors.transparent,
             ],
             stops: const [0.0, 0.4, 0.7, 1.0],
           ),
-          backgroundBlendMode:
-              BlendMode.multiply, // Ensures soft merging on skin tone
+          // backgroundBlendMode: BlendMode.multiply, // Removed to prevent full screen red tint bug
         ),
       ),
     );
@@ -393,7 +431,7 @@ class RightFootWidget extends StatelessWidget {
     double temp,
     String pointName,
   ) {
-    bool isHotspot = pressure >= 0.7; // Normal -> green, Hotspot -> red
+    bool isHotspot = pressure >= 70.0; // Normal -> green, Hotspot -> red
     bool isHotTemp = temp > 37.5; // Threshold for temp alert
 
     Color pressureColor = isHotspot ? Colors.red : Colors.green;
@@ -418,7 +456,7 @@ class RightFootWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pressure: ${(pressure * 100).toStringAsFixed(1)} kPa',
+                    'Pressure: ${pressure.toStringAsFixed(1)} kPa',
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 8),

@@ -1,17 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 /// Represents a single pressure or temperature reading from a sensor zone
-enum SensorZone {
-  heel,
-  ball,
-  toe,
-}
+enum SensorZone { heel, ball, toe, oppositeHeel, oppositeBall, oppositeToe }
 
 /// Identifies which foot/insole provided the reading
-enum DeviceSide {
-  left,
-  right,
-}
+enum DeviceSide { left, right }
 
 /// A single telemetry sample from one insole, one zone, containing pressure and temperature.
 /// Designed for high-frequency ingestion (10 Hz) and SQLite persistence.
@@ -145,18 +138,19 @@ class FootTelemetry {
 
   /// Extract pressure values in order (heel, ball, toe) for FootPressureWidget
   List<double> getPressures() => [
-        heelReading.pressure,
-        ballReading.pressure,
-        toeReading.pressure,
-      ];
+    heelReading.pressure,
+    ballReading.pressure,
+    toeReading.pressure,
+  ];
 
   /// Extract temperature values in order (heel, ball, toe) for FootPressureWidget
   List<double> getTemperatures() => [
-        heelReading.temperature,
-        ballReading.temperature,
-        toeReading.temperature,
-      ];
+    heelReading.temperature,
+    ballReading.temperature,
+    toeReading.temperature,
+  ];
 
   /// Check if all zones are valid
-  bool get isComplete => heelReading.isValid && ballReading.isValid && toeReading.isValid;
+  bool get isComplete =>
+      heelReading.isValid && ballReading.isValid && toeReading.isValid;
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/sync_config.dart';
-import '../services/bluetooth_service.dart';
 import '../services/sync_scheduler_service.dart';
 import '../theme/app_theme.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class SyncCard extends StatefulWidget {
   const SyncCard({super.key});
@@ -17,7 +15,6 @@ class _SyncCardState extends State<SyncCard> {
   TimeOfDay _selectedTime = TimeOfDay.now();
   String _selectedDay = 'Monday';
   int _selectedDate = 1;
-  bool _isBluetoothOn = false;
 
   final List<String> _daysOfWeek = [
     'Monday',
@@ -32,35 +29,20 @@ class _SyncCardState extends State<SyncCard> {
   @override
   void initState() {
     super.initState();
-    _checkBluetoothAndLoadConfig();
+    _loadConfig();
   }
 
-  Future<void> _checkBluetoothAndLoadConfig() async {
-    final isOn = await DiaSoleBluetoothService.isBluetoothOn();
+  void _loadConfig() {
+    final config = SyncSchedulerService.currentConfig.value;
     setState(() {
-      _isBluetoothOn = isOn;
+      _selectedType = config.type;
+      _selectedTime = config.time;
+      if (config.day != null) _selectedDay = config.day!;
+      if (config.date != null) _selectedDate = config.date!;
     });
-
-    if (isOn) {
-      final config = await SyncSchedulerService.getSavedConfig();
-      if (config != null) {
-        setState(() {
-          _selectedType = config.type;
-          _selectedTime = config.time;
-          if (config.day != null) _selectedDay = config.day!;
-          if (config.date != null) _selectedDate = config.date!;
-        });
-      }
-    }
   }
 
   Future<void> _saveConfig() async {
-    final isOn = await DiaSoleBluetoothService.isBluetoothOn();
-    if (!isOn) {
-      _showBluetoothWarning();
-      return;
-    }
-
     final config = SyncConfig(
       type: _selectedType,
       time: _selectedTime,
@@ -72,41 +54,9 @@ class _SyncCardState extends State<SyncCard> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sync interval saved successfully')),
+        const SnackBar(content: Text('Firebase Fetch Time saved successfully')),
       );
     }
-  }
-
-  void _showBluetoothWarning() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Bluetooth Required'),
-        content: const Text(
-          'Bluetooth is required to sync data. Please turn it on.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Dismiss'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              // Attempt to open bluetooth settings if possible
-              // Note: flutter_blue_plus supports turnOn() on Android
-              try {
-                await FlutterBluePlus.turnOn();
-                _checkBluetoothAndLoadConfig();
-              } catch (e) {
-                // Ignore error if not supported
-              }
-            },
-            child: const Text('Turn On'),
-          ),
-        ],
-      ),
-    );
   }
 
   String _getSummaryText() {
@@ -134,7 +84,7 @@ class _SyncCardState extends State<SyncCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Set Data Sync Interval",
+            "Set Sync Schedule",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -147,7 +97,7 @@ class _SyncCardState extends State<SyncCard> {
           SegmentedButton<SyncType>(
             showSelectedIcon: false,
             segments: const [
-              ButtonSegment(value: SyncType.daily, label: Text('Everyday')),
+              ButtonSegment(value: SyncType.daily, label: Text('Daily')),
               ButtonSegment(value: SyncType.weekly, label: Text('Weekly')),
               ButtonSegment(value: SyncType.monthly, label: Text('Monthly')),
             ],
@@ -157,46 +107,22 @@ class _SyncCardState extends State<SyncCard> {
                 _selectedType = newSelection.first;
               });
             },
-            style: ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-              backgroundColor: WidgetStateProperty.resolveWith<Color>((
-                Set<WidgetState> states,
-              ) {
-                if (states.contains(WidgetState.selected)) {
-                  return Colors.green.withValues(alpha: 0.2); // Green highlight
-                }
-                return Colors.transparent;
-              }),
-              foregroundColor: WidgetStateProperty.resolveWith<Color>((
-                Set<WidgetState> states,
-              ) {
-                if (states.contains(WidgetState.selected)) {
-                  return Colors.green[800]!; // Darker green text when selected
-                }
-                return AppTheme.textPrimary;
-              }),
-            ),
           ),
-
           const SizedBox(height: 16),
 
-          // Dynamic Inputs
           Row(
             children: [
               if (_selectedType == SyncType.weekly) ...[
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: _selectedDay,
+                    value: _selectedDay,
                     isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Day'),
                     items: _daysOfWeek.map((day) {
                       return DropdownMenuItem(value: day, child: Text(day));
                     }).toList(),
                     onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedDay = val);
-                      }
+                      if (val != null) setState(() => _selectedDay = val);
                     },
                   ),
                 ),
@@ -205,7 +131,7 @@ class _SyncCardState extends State<SyncCard> {
               if (_selectedType == SyncType.monthly) ...[
                 Expanded(
                   child: DropdownButtonFormField<int>(
-                    initialValue: _selectedDate,
+                    value: _selectedDate,
                     isExpanded: true,
                     decoration: const InputDecoration(labelText: 'Date'),
                     items: List.generate(31, (index) => index + 1).map((date) {
@@ -215,9 +141,7 @@ class _SyncCardState extends State<SyncCard> {
                       );
                     }).toList(),
                     onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedDate = val);
-                      }
+                      if (val != null) setState(() => _selectedDate = val);
                     },
                   ),
                 ),
@@ -250,8 +174,6 @@ class _SyncCardState extends State<SyncCard> {
           ),
 
           const SizedBox(height: 24),
-
-          // Summary
           Text(
             _getSummaryText(),
             style: const TextStyle(
@@ -259,14 +181,12 @@ class _SyncCardState extends State<SyncCard> {
               fontStyle: FontStyle.italic,
             ),
           ),
-
           const SizedBox(height: 16),
 
-          // Save Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _isBluetoothOn ? _saveConfig : _showBluetoothWarning,
+              onPressed: _saveConfig,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,
                 shape: RoundedRectangleBorder(
@@ -275,7 +195,7 @@ class _SyncCardState extends State<SyncCard> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text(
-                'Save Sync Interval',
+                'Save Sync Schedule',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
