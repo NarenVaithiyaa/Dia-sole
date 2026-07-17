@@ -1,58 +1,56 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 class FootPressureWidget extends StatelessWidget {
-  final double pressureLeftHeel;
-  final double pressureLeftToe;
-  final double pressureLeftBall;
-  final double pressureRightHeel;
-  final double pressureRightToe;
-  final double pressureLeftOppositeHeel;
-  final double pressureLeftOppositeToe;
-  final double pressureLeftOppositeBall;
-  final double pressureRightOppositeHeel;
-  final double pressureRightOppositeToe;
-  final double pressureRightOppositeBall;
-  final double pressureRightBall;
-  final double tempLeftHeel;
-  final double tempLeftToe;
-  final double tempLeftBall;
-  final double tempLeftOppositeHeel;
-  final double tempLeftOppositeToe;
-  final double tempLeftOppositeBall;
-  final double tempRightHeel;
-  final double tempRightToe;
-  final double tempRightBall;
-  final double tempRightOppositeHeel;
-  final double tempRightOppositeToe;
-  final double tempRightOppositeBall;
+  final double pressureLeftS1;
+  final double pressureLeftS2;
+  final double pressureLeftS3;
+  final double pressureLeftS4;
+  final double pressureLeftS5;
+  final double pressureLeftS6;
+
+  final double pressureRightS1;
+  final double pressureRightS2;
+  final double pressureRightS3;
+  final double pressureRightS4;
+  final double pressureRightS5;
+  final double pressureRightS6;
+
+  final double tempLeftS1;
+  final double tempLeftS2;
+  final double tempLeftS3;
+  final double tempLeftS4;
+  final double tempLeftS6;
+
+  final double tempRightS1;
+  final double tempRightS2;
+  final double tempRightS3;
+  final double tempRightS4;
+  final double tempRightS6;
 
   const FootPressureWidget({
     super.key,
-    this.pressureLeftHeel = 0.5,
-    this.pressureLeftToe = 0.3,
-    this.pressureLeftBall = 0.4,
-    this.pressureLeftOppositeHeel = 0.5,
-    this.pressureLeftOppositeToe = 0.3,
-    this.pressureLeftOppositeBall = 0.4,
-    this.pressureRightHeel = 0.8,
-    this.pressureRightToe = 0.4,
-    this.pressureRightBall = 0.5,
-    this.pressureRightOppositeHeel = 0.8,
-    this.pressureRightOppositeToe = 0.4,
-    this.pressureRightOppositeBall = 0.5,
-    this.tempLeftHeel = 36.5,
-    this.tempLeftToe = 36.6,
-    this.tempLeftBall = 36.6,
-    this.tempLeftOppositeHeel = 36.5,
-    this.tempLeftOppositeToe = 36.6,
-    this.tempLeftOppositeBall = 36.6,
-    this.tempRightHeel = 37.0,
-    this.tempRightToe = 36.8,
-    this.tempRightBall = 36.9,
-    this.tempRightOppositeHeel = 37.0,
-    this.tempRightOppositeToe = 36.8,
-    this.tempRightOppositeBall = 36.9,
+    this.pressureLeftS1 = 0.5,
+    this.pressureLeftS2 = 0.3,
+    this.pressureLeftS3 = 0.4,
+    this.pressureLeftS4 = 0.5,
+    this.pressureLeftS5 = 0.3,
+    this.pressureLeftS6 = 0.4,
+    this.pressureRightS1 = 0.8,
+    this.pressureRightS2 = 0.4,
+    this.pressureRightS3 = 0.5,
+    this.pressureRightS4 = 0.8,
+    this.pressureRightS5 = 0.4,
+    this.pressureRightS6 = 0.5,
+    this.tempLeftS1 = 36.5,
+    this.tempLeftS2 = 36.6,
+    this.tempLeftS3 = 36.6,
+    this.tempLeftS4 = 36.5,
+    this.tempLeftS6 = 36.6,
+    this.tempRightS1 = 37.0,
+    this.tempRightS2 = 36.8,
+    this.tempRightS3 = 36.9,
+    this.tempRightS4 = 37.0,
+    this.tempRightS6 = 36.8,
   });
 
   @override
@@ -68,45 +66,43 @@ class FootPressureWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Left Foot (Mirrored Right Foot)
+                // Left Foot (Mirrored Right Foot Image)
                 Flexible(
                   child: Transform.scale(
                     scaleX: -1.0,
                     alignment: Alignment.center,
-                    child: RightFootWidget(
+                    child: FootImageWidget(
                       footSide: "Left",
-                      pressureHeel: pressureLeftHeel,
-                      pressureToe: pressureLeftToe,
-                      pressureBall: pressureLeftBall,
-                      pressureOppositeHeel: pressureLeftOppositeHeel,
-                      pressureOppositeToe: pressureLeftOppositeToe,
-                      pressureOppositeBall: pressureLeftOppositeBall,
-                      tempHeel: tempLeftHeel,
-                      tempToe: tempLeftToe,
-                      tempBall: tempLeftBall,
-                      tempOppositeHeel: tempLeftOppositeHeel,
-                      tempOppositeToe: tempLeftOppositeToe,
-                      tempOppositeBall: tempLeftOppositeBall,
+                      pressureS1: pressureLeftS1,
+                      pressureS2: pressureLeftS2,
+                      pressureS3: pressureLeftS3,
+                      pressureS4: pressureLeftS4,
+                      pressureS5: pressureLeftS5,
+                      pressureS6: pressureLeftS6,
+                      tempS1: tempLeftS1,
+                      tempS2: tempLeftS2,
+                      tempS3: tempLeftS3,
+                      tempS4: tempLeftS4,
+                      tempS6: tempLeftS6,
                     ),
                   ),
                 ),
                 const SizedBox(width: 40), // Generous central spacing
-                // Right Foot (Canonical)
+                // Right Foot
                 Flexible(
-                  child: RightFootWidget(
+                  child: FootImageWidget(
                     footSide: "Right",
-                    pressureHeel: pressureRightHeel,
-                    pressureToe: pressureRightToe,
-                    pressureBall: pressureRightBall,
-                    pressureOppositeHeel: pressureRightOppositeHeel,
-                    pressureOppositeToe: pressureRightOppositeToe,
-                    pressureOppositeBall: pressureRightOppositeBall,
-                    tempHeel: tempRightHeel,
-                    tempToe: tempRightToe,
-                    tempBall: tempRightBall,
-                    tempOppositeHeel: tempRightOppositeHeel,
-                    tempOppositeToe: tempRightOppositeToe,
-                    tempOppositeBall: tempRightOppositeBall,
+                    pressureS1: pressureRightS1,
+                    pressureS2: pressureRightS2,
+                    pressureS3: pressureRightS3,
+                    pressureS4: pressureRightS4,
+                    pressureS5: pressureRightS5,
+                    pressureS6: pressureRightS6,
+                    tempS1: tempRightS1,
+                    tempS2: tempRightS2,
+                    tempS3: tempRightS3,
+                    tempS4: tempRightS4,
+                    tempS6: tempRightS6,
                   ),
                 ),
               ],
@@ -123,9 +119,9 @@ class FootPressureWidget extends StatelessWidget {
 
   Widget _buildHealthAnalysis() {
     // Determine absolute temperature differences between corresponding points
-    double diffToe = (tempLeftToe - tempRightToe).abs();
-    double diffBall = (tempLeftBall - tempRightBall).abs();
-    double diffHeel = (tempLeftHeel - tempRightHeel).abs();
+    double diffS1 = (tempLeftS1 - tempRightS1).abs();
+    double diffS3 = (tempLeftS3 - tempRightS3).abs();
+    double diffS6 = (tempLeftS6 - tempRightS6).abs();
 
     String status(double diff) =>
         diff > 2.0 ? "Temperature Abnormal" : "Temperature Normal";
@@ -158,30 +154,30 @@ class FootPressureWidget extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildAnalysisRow(
-            "Toe Area Difference",
-            diffToe,
-            status(diffToe),
-            statusColor(diffToe),
+            "S1 (Toe) Area Difference",
+            diffS1,
+            status(diffS1),
+            statusColor(diffS1),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(height: 1),
           ),
           _buildAnalysisRow(
-            "Ball Area Difference",
-            diffBall,
-            status(diffBall),
-            statusColor(diffBall),
+            "S3 (Ball) Area Difference",
+            diffS3,
+            status(diffS3),
+            statusColor(diffS3),
           ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(height: 1),
           ),
           _buildAnalysisRow(
-            "Heel Area Difference",
-            diffHeel,
-            status(diffHeel),
-            statusColor(diffHeel),
+            "S6 (Heel) Area Difference",
+            diffS6,
+            status(diffS6),
+            statusColor(diffS6),
           ),
         ],
       ),
@@ -294,41 +290,40 @@ class FootPressureWidget extends StatelessWidget {
   }
 }
 
-class RightFootWidget extends StatelessWidget {
+class FootImageWidget extends StatelessWidget {
   final String footSide;
-  final double pressureHeel;
-  final double pressureToe;
-  final double pressureBall;
-  final double pressureOppositeHeel;
-  final double pressureOppositeToe;
-  final double pressureOppositeBall;
-  final double tempHeel;
-  final double tempToe;
-  final double tempBall;
-  final double tempOppositeHeel;
-  final double tempOppositeToe;
-  final double tempOppositeBall;
+  final double pressureS1;
+  final double pressureS2;
+  final double pressureS3;
+  final double pressureS4;
+  final double pressureS5;
+  final double pressureS6;
 
-  const RightFootWidget({
+  final double tempS1;
+  final double tempS2;
+  final double tempS3;
+  final double tempS4;
+  final double tempS6;
+
+  const FootImageWidget({
     super.key,
     this.footSide = "Right",
-    required this.pressureHeel,
-    required this.pressureToe,
-    required this.pressureBall,
-    required this.pressureOppositeHeel,
-    required this.pressureOppositeToe,
-    required this.pressureOppositeBall,
-    required this.tempHeel,
-    required this.tempToe,
-    required this.tempBall,
-    required this.tempOppositeHeel,
-    required this.tempOppositeToe,
-    required this.tempOppositeBall,
+    required this.pressureS1,
+    required this.pressureS2,
+    required this.pressureS3,
+    required this.pressureS4,
+    required this.pressureS5,
+    required this.pressureS6,
+    required this.tempS1,
+    required this.tempS2,
+    required this.tempS3,
+    required this.tempS4,
+    required this.tempS6,
   });
 
   @override
   Widget build(BuildContext context) {
-    // We enforce an exact aspect ratio so internal geometry is a perfectly mapped 100x240 box
+    // Adjust aspect ratio based on realistic foot image
     return AspectRatio(
       aspectRatio: 100 / 240,
       child: LayoutBuilder(
@@ -336,47 +331,60 @@ class RightFootWidget extends StatelessWidget {
           final double w = constraints.maxWidth;
           final double h = constraints.maxHeight;
 
-          // Accurately matched percentage coordinates strictly within the 100x240 bounding box
-          const double toeX = 0.18; // Big toe
-          const double toeY = 0.12;
-
-          const double ballX = 0.35; // Medial ball
-          const double ballY = 0.32;
-
-          const double heelX = 0.50; // Heel center
-          const double heelY = 0.85;
+          // Mapping according to the technical specification:
+          // For Right foot:
+          // S1: Inner top (big toe)
+          const double s1X = 0.35;
+          const double s1Y = 0.15;
           
-          // Exactly Opposite Places
-          const double oppToeX = 0.75; 
-          const double oppToeY = 0.18;
+          // S2: Inner ball
+          const double s2X = 0.35;
+          const double s2Y = 0.35;
           
-          const double oppBallX = 0.75; 
-          const double oppBallY = 0.35;
+          // S3: Middle ball
+          const double s3X = 0.50;
+          const double s3Y = 0.32;
           
-          const double oppHeelX = 0.50; 
-          const double oppHeelY = 0.55;
+          // S4: Outer ball
+          const double s4X = 0.70;
+          const double s4Y = 0.40;
+          
+          // S5: Midfoot (center arch area)
+          const double s5X = 0.50;
+          const double s5Y = 0.60;
+          
+          // S6: Heel (center)
+          const double s6X = 0.50;
+          const double s6Y = 0.82;
 
           return Stack(
             clipBehavior: Clip.none,
             children: [
-              // 1. Right Foot Silhouette
-              Positioned.fill(child: CustomPaint(painter: FootShapePainter())),
+              // 1. Realistic Right Foot Image
+              Positioned.fill(
+                child: ClipRect(
+                  child: Image.asset(
+                    'assets/images/foot_diagram.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
 
               // 2. Soft Radial Heatmaps
-              _buildHeatmap(w, h, toeX, toeY, pressureToe),
-              _buildHeatmap(w, h, ballX, ballY, pressureBall),
-              _buildHeatmap(w, h, heelX, heelY, pressureHeel),
-              _buildHeatmap(w, h, oppToeX, oppToeY, pressureOppositeToe),
-              _buildHeatmap(w, h, oppBallX, oppBallY, pressureOppositeBall),
-              _buildHeatmap(w, h, oppHeelX, oppHeelY, pressureOppositeHeel),
+              _buildHeatmap(w, h, s1X, s1Y, pressureS1),
+              _buildHeatmap(w, h, s2X, s2Y, pressureS2),
+              _buildHeatmap(w, h, s3X, s3Y, pressureS3),
+              _buildHeatmap(w, h, s4X, s4Y, pressureS4),
+              _buildHeatmap(w, h, s5X, s5Y, pressureS5),
+              _buildHeatmap(w, h, s6X, s6Y, pressureS6),
 
               // 3. Sensor Anchors
-              _buildSensor(context, w, h, toeX, toeY, pressureToe, tempToe, "Toe"),
-              _buildSensor(context, w, h, ballX, ballY, pressureBall, tempBall, "Ball"),
-              _buildSensor(context, w, h, heelX, heelY, pressureHeel, tempHeel, "Heel"),
-              _buildSensor(context, w, h, oppToeX, oppToeY, pressureOppositeToe, tempOppositeToe, "OpToe"),
-              _buildSensor(context, w, h, oppBallX, oppBallY, pressureOppositeBall, tempOppositeBall, "OpBall"),
-              _buildSensor(context, w, h, oppHeelX, oppHeelY, pressureOppositeHeel, tempOppositeHeel, "OpHeel"),
+              _buildSensor(context, w, h, s1X, s1Y, pressureS1, tempS1, "S1 (Toe)"),
+              _buildSensor(context, w, h, s2X, s2Y, pressureS2, tempS2, "S2 (Inner Ball)"),
+              _buildSensor(context, w, h, s3X, s3Y, pressureS3, tempS3, "S3 (Mid Ball)"),
+              _buildSensor(context, w, h, s4X, s4Y, pressureS4, tempS4, "S4 (Outer Ball)"),
+              _buildSensor(context, w, h, s5X, s5Y, pressureS5, null, "S5 (Midfoot)"), // No Temp for S5
+              _buildSensor(context, w, h, s6X, s6Y, pressureS6, tempS6, "S6 (Heel)"),
             ],
           );
         },
@@ -395,7 +403,7 @@ class RightFootWidget extends StatelessWidget {
 
     double normalizedPressure = (pressure / 100.0).clamp(0.0, 1.0);
 
-    // Heatmap bloom size based strictly on widget width and pressure value
+    // Heatmap bloom size
     double size = w * 0.9 * normalizedPressure;
 
     return Positioned(
@@ -415,7 +423,6 @@ class RightFootWidget extends StatelessWidget {
             ],
             stops: const [0.0, 0.4, 0.7, 1.0],
           ),
-          // backgroundBlendMode: BlendMode.multiply, // Removed to prevent full screen red tint bug
         ),
       ),
     );
@@ -428,19 +435,17 @@ class RightFootWidget extends StatelessWidget {
     double dx,
     double dy,
     double pressure,
-    double temp,
+    double? temp, // Nullable since S5 doesn't have temperature
     String pointName,
   ) {
-    bool isHotspot = pressure >= 70.0; // Normal -> green, Hotspot -> red
-    bool isHotTemp = temp > 37.5; // Threshold for temp alert
+    bool isHotspot = pressure >= 70.0;
+    bool isHotTemp = temp != null && temp > 37.5;
 
     Color pressureColor = isHotspot ? Colors.red : Colors.green;
     Color tempColor = isHotTemp ? Colors.red : Colors.orange;
 
     return Positioned(
-      left:
-          (dx * w) -
-          24, // perfectly center 48x48 bounds over exact target point
+      left: (dx * w) - 24, // perfectly center 48x48 bounds over exact target point
       top: (dy * h) - 24,
       child: GestureDetector(
         onTap: () {
@@ -460,10 +465,16 @@ class RightFootWidget extends StatelessWidget {
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Temperature: ${temp.toStringAsFixed(1)} °C',
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                  if (temp != null)
+                    Text(
+                      'Temperature: ${temp.toStringAsFixed(1)} °C',
+                      style: const TextStyle(fontSize: 16),
+                    )
+                  else
+                    const Text(
+                      'Temperature: N/A',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
                 ],
               ),
               actions: [
@@ -482,11 +493,13 @@ class RightFootWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Reverse the transform on the icon so it doesn't look weird if side is Left
-              Transform.scale(
-                scaleX: footSide == "Left" ? -1.0 : 1.0,
-                child: Icon(Icons.star, color: tempColor, size: 14),
-              ),
+              if (temp != null)
+                Transform.scale(
+                  scaleX: footSide == "Left" ? -1.0 : 1.0,
+                  child: Icon(Icons.star, color: tempColor, size: 14),
+                )
+              else
+                const SizedBox(height: 14), // Spacer for missing temp icon
               const SizedBox(height: 2),
               Container(
                 width: 14,
@@ -499,10 +512,7 @@ class RightFootWidget extends StatelessWidget {
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 2,
-                      offset: Offset(
-                        0,
-                        1,
-                      ), // Vertical shadow unchanged by mirror
+                      offset: Offset(0, 1),
                     ),
                   ],
                 ),
@@ -513,116 +523,4 @@ class RightFootWidget extends StatelessWidget {
       ),
     );
   }
-}
-
-class FootShapePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // The design resolution for our exact points
-    const double designWidth = 100;
-    const double designHeight = 240;
-
-    // We mathematically contain drawing into size (mimics BoxFit.contain perfectly)
-    final double scaleX = size.width / designWidth;
-    final double scaleY = size.height / designHeight;
-    final double scale = math.min(scaleX, scaleY);
-
-    final double dx = (size.width - designWidth * scale) / 2;
-    final double dy = (size.height - designHeight * scale) / 2;
-
-    canvas.translate(dx, dy);
-    canvas.scale(scale, scale);
-
-    final Path path = Path();
-
-    // Heel bottom (flattened slightly, stable base)
-    path.moveTo(42, 238);
-    path.cubicTo(50, 239.5, 60, 239.5, 68, 237);
-
-    // Lateral (Outer) Heel sweeping to Midfoot
-    path.cubicTo(82, 232, 87, 210, 86, 160);
-
-    // Lateral Forefoot (slightly widened)
-    path.cubicTo(85, 110, 95, 85, 87, 57);
-
-    // 5th Toe (Pinky) - angled outward slightly
-    path.quadraticBezierTo(83.5, 48, 80, 40);
-    path.arcToPoint(
-      const Offset(72, 42),
-      radius: const Radius.circular(4.2),
-      clockwise: false,
-    );
-    path.quadraticBezierTo(71, 49, 69, 52);
-
-    // 4th Toe
-    path.quadraticBezierTo(71, 39, 68, 30);
-    path.arcToPoint(
-      const Offset(59, 32),
-      radius: const Radius.circular(5.0),
-      clockwise: false,
-    );
-    path.quadraticBezierTo(58, 40, 56, 44);
-
-    // 3rd Toe
-    path.quadraticBezierTo(57, 30, 54, 21);
-    path.arcToPoint(
-      const Offset(44, 23),
-      radius: const Radius.circular(6.2),
-      clockwise: false,
-    );
-    path.quadraticBezierTo(43, 33, 41, 38);
-
-    // 2nd Toe
-    path.quadraticBezierTo(42, 23, 39, 12);
-    path.arcToPoint(
-      const Offset(27, 14),
-      radius: const Radius.circular(7.8),
-      clockwise: false,
-    );
-    path.quadraticBezierTo(26, 25, 24, 30);
-
-    // 1st Toe (Big Toe) - larger, more prominent
-    path.quadraticBezierTo(26, 13, 22, 1);
-    path.arcToPoint(
-      const Offset(4, 6),
-      radius: const Radius.circular(12.5),
-      clockwise: false,
-    );
-
-    // Medial drop down from big toe
-    path.quadraticBezierTo(3, 24, 11, 46);
-
-    // Medial Forefoot (Ball of the foot - widened)
-    path.cubicTo(15, 58, 22, 75, 25, 90);
-
-    // Plantar Arch (Smooth continuous S-curve)
-    path.cubicTo(28, 115, 49, 145, 51, 175);
-
-    // Medial Heel looping back
-    path.cubicTo(53, 205, 34, 235, 42, 238);
-
-    path.close();
-
-    // Natural skin tone
-    final Paint fillPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFFFDE0CB), Color(0xFFEBC1A8)],
-      ).createShader(const Rect.fromLTWH(0, 0, designWidth, designHeight))
-      ..style = PaintingStyle.fill;
-
-    // Clean edge outline
-    final Paint strokePaint = Paint()
-      ..color = const Color(0xFFD7B29D)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth =
-          2.0 / scale; // Neutralizes zoom distortion on line thickness
-
-    canvas.drawPath(path, fillPaint);
-    canvas.drawPath(path, strokePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

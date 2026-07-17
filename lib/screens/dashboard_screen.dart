@@ -136,91 +136,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final rightTemps = provider.getTemperatures(DeviceSide.right);
 
         // Use live values from Firebase, 0.0 when no data available
-        final pressureLeftHeel =
-            leftPressures != null && leftPressures.isNotEmpty
-            ? leftPressures[0]
-            : 0.0;
-        final pressureLeftBall =
-            leftPressures != null && leftPressures.length > 1
-            ? leftPressures[1]
-            : 0.0;
-        final pressureLeftToe =
-            leftPressures != null && leftPressures.length > 2
-            ? leftPressures[2]
-            : 0.0;
-        final pressureLeftOppositeHeel =
-            leftPressures != null && leftPressures.length > 3
-            ? leftPressures[3]
-            : 0.0;
-        final pressureLeftOppositeBall =
-            leftPressures != null && leftPressures.length > 4
-            ? leftPressures[4]
-            : 0.0;
-        final pressureLeftOppositeToe =
-            leftPressures != null && leftPressures.length > 5
-            ? leftPressures[5]
-            : 0.0;
+        final pressureLeftS1 = leftPressures != null && leftPressures.isNotEmpty ? leftPressures[0] : 0.0;
+        final pressureLeftS2 = leftPressures != null && leftPressures.length > 1 ? leftPressures[1] : 0.0;
+        final pressureLeftS3 = leftPressures != null && leftPressures.length > 2 ? leftPressures[2] : 0.0;
+        final pressureLeftS4 = leftPressures != null && leftPressures.length > 3 ? leftPressures[3] : 0.0;
+        final pressureLeftS5 = leftPressures != null && leftPressures.length > 4 ? leftPressures[4] : 0.0;
+        final pressureLeftS6 = leftPressures != null && leftPressures.length > 5 ? leftPressures[5] : 0.0;
 
-        final pressureRightHeel =
-            rightPressures != null && rightPressures.isNotEmpty
-            ? rightPressures[0]
-            : 0.0;
-        final pressureRightBall =
-            rightPressures != null && rightPressures.length > 1
-            ? rightPressures[1]
-            : 0.0;
-        final pressureRightToe =
-            rightPressures != null && rightPressures.length > 2
-            ? rightPressures[2]
-            : 0.0;
-        final pressureRightOppositeHeel =
-            rightPressures != null && rightPressures.length > 3
-            ? rightPressures[3]
-            : 0.0;
-        final pressureRightOppositeBall =
-            rightPressures != null && rightPressures.length > 4
-            ? rightPressures[4]
-            : 0.0;
-        final pressureRightOppositeToe =
-            rightPressures != null && rightPressures.length > 5
-            ? rightPressures[5]
-            : 0.0;
+        final pressureRightS1 = rightPressures != null && rightPressures.isNotEmpty ? rightPressures[0] : 0.0;
+        final pressureRightS2 = rightPressures != null && rightPressures.length > 1 ? rightPressures[1] : 0.0;
+        final pressureRightS3 = rightPressures != null && rightPressures.length > 2 ? rightPressures[2] : 0.0;
+        final pressureRightS4 = rightPressures != null && rightPressures.length > 3 ? rightPressures[3] : 0.0;
+        final pressureRightS5 = rightPressures != null && rightPressures.length > 4 ? rightPressures[4] : 0.0;
+        final pressureRightS6 = rightPressures != null && rightPressures.length > 5 ? rightPressures[5] : 0.0;
 
-        final tempLeftHeel = leftTemps != null && leftTemps.isNotEmpty
-            ? leftTemps[0]
-            : 0.0;
-        final tempLeftBall = leftTemps != null && leftTemps.length > 1
-            ? leftTemps[1]
-            : 0.0;
-        final tempLeftToe = leftTemps != null && leftTemps.length > 2
-            ? leftTemps[2]
-            : 0.0;
-        final tempLeftOppositeHeel = leftTemps != null && leftTemps.length > 3
-            ? leftTemps[3]
-            : 0.0;
-        final tempLeftOppositeBall = leftTemps != null && leftTemps.length > 4
-            ? leftTemps[4]
-            : 0.0;
-        final tempLeftOppositeToe = leftTemps != null && leftTemps.length > 5
-            ? leftTemps[5]
-            : 0.0;
+        final tempLeftS1 = leftTemps != null && leftTemps.isNotEmpty ? leftTemps[0] : 0.0;
+        final tempLeftS2 = leftTemps != null && leftTemps.length > 1 ? leftTemps[1] : 0.0;
+        final tempLeftS3 = leftTemps != null && leftTemps.length > 2 ? leftTemps[2] : 0.0;
+        final tempLeftS4 = leftTemps != null && leftTemps.length > 3 ? leftTemps[3] : 0.0;
+        final tempLeftS6 = leftTemps != null && leftTemps.length > 5 ? leftTemps[5] : 0.0;
 
-        final tempRightHeel = rightTemps != null && rightTemps.isNotEmpty
-            ? rightTemps[0]
-            : 0.0;
-        final tempRightBall = rightTemps != null && rightTemps.length > 1
-            ? rightTemps[1]
-            : 0.0;
-        final tempRightToe = rightTemps != null && rightTemps.length > 2
-            ? rightTemps[2]
-            : 0.0;
-        final tempRightOppositeHeel =
-            rightTemps != null && rightTemps.length > 3 ? rightTemps[3] : 0.0;
-        final tempRightOppositeBall =
-            rightTemps != null && rightTemps.length > 4 ? rightTemps[4] : 0.0;
-        final tempRightOppositeToe = rightTemps != null && rightTemps.length > 5
-            ? rightTemps[5]
-            : 0.0;
+        final tempRightS1 = rightTemps != null && rightTemps.isNotEmpty ? rightTemps[0] : 0.0;
+        final tempRightS2 = rightTemps != null && rightTemps.length > 1 ? rightTemps[1] : 0.0;
+        final tempRightS3 = rightTemps != null && rightTemps.length > 2 ? rightTemps[2] : 0.0;
+        final tempRightS4 = rightTemps != null && rightTemps.length > 3 ? rightTemps[3] : 0.0;
+        final tempRightS6 = rightTemps != null && rightTemps.length > 5 ? rightTemps[5] : 0.0;
 
         return Container(
           padding: const EdgeInsets.all(24),
@@ -289,30 +229,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 24),
               FootPressureWidget(
-                pressureLeftHeel: pressureLeftHeel,
-                pressureLeftToe: pressureLeftToe,
-                pressureLeftBall: pressureLeftBall,
-                pressureLeftOppositeHeel: pressureLeftOppositeHeel,
-                pressureLeftOppositeToe: pressureLeftOppositeToe,
-                pressureLeftOppositeBall: pressureLeftOppositeBall,
-                pressureRightHeel: pressureRightHeel,
-                pressureRightToe: pressureRightToe,
-                pressureRightBall: pressureRightBall,
-                pressureRightOppositeHeel: pressureRightOppositeHeel,
-                pressureRightOppositeToe: pressureRightOppositeToe,
-                pressureRightOppositeBall: pressureRightOppositeBall,
-                tempLeftHeel: tempLeftHeel,
-                tempLeftToe: tempLeftToe,
-                tempLeftBall: tempLeftBall,
-                tempLeftOppositeHeel: tempLeftOppositeHeel,
-                tempLeftOppositeToe: tempLeftOppositeToe,
-                tempLeftOppositeBall: tempLeftOppositeBall,
-                tempRightHeel: tempRightHeel,
-                tempRightToe: tempRightToe,
-                tempRightBall: tempRightBall,
-                tempRightOppositeHeel: tempRightOppositeHeel,
-                tempRightOppositeToe: tempRightOppositeToe,
-                tempRightOppositeBall: tempRightOppositeBall,
+                pressureLeftS1: pressureLeftS1,
+                pressureLeftS2: pressureLeftS2,
+                pressureLeftS3: pressureLeftS3,
+                pressureLeftS4: pressureLeftS4,
+                pressureLeftS5: pressureLeftS5,
+                pressureLeftS6: pressureLeftS6,
+                pressureRightS1: pressureRightS1,
+                pressureRightS2: pressureRightS2,
+                pressureRightS3: pressureRightS3,
+                pressureRightS4: pressureRightS4,
+                pressureRightS5: pressureRightS5,
+                pressureRightS6: pressureRightS6,
+                tempLeftS1: tempLeftS1,
+                tempLeftS2: tempLeftS2,
+                tempLeftS3: tempLeftS3,
+                tempLeftS4: tempLeftS4,
+                tempLeftS6: tempLeftS6,
+                tempRightS1: tempRightS1,
+                tempRightS2: tempRightS2,
+                tempRightS3: tempRightS3,
+                tempRightS4: tempRightS4,
+                tempRightS6: tempRightS6,
               ),
             ],
           ),

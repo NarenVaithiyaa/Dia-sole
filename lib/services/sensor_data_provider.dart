@@ -31,20 +31,20 @@ class SensorDataProvider extends ChangeNotifier {
 
   final Map<DeviceSide, Map<SensorZone, SensorReading?>> _latestReadings = {
     DeviceSide.left: {
-      SensorZone.heel: null,
-      SensorZone.ball: null,
-      SensorZone.toe: null,
-      SensorZone.oppositeHeel: null,
-      SensorZone.oppositeBall: null,
-      SensorZone.oppositeToe: null,
+      SensorZone.s1: null,
+      SensorZone.s2: null,
+      SensorZone.s3: null,
+      SensorZone.s4: null,
+      SensorZone.s5: null,
+      SensorZone.s6: null,
     },
     DeviceSide.right: {
-      SensorZone.heel: null,
-      SensorZone.ball: null,
-      SensorZone.toe: null,
-      SensorZone.oppositeHeel: null,
-      SensorZone.oppositeBall: null,
-      SensorZone.oppositeToe: null,
+      SensorZone.s1: null,
+      SensorZone.s2: null,
+      SensorZone.s3: null,
+      SensorZone.s4: null,
+      SensorZone.s5: null,
+      SensorZone.s6: null,
     },
   };
 
@@ -163,29 +163,38 @@ class SensorDataProvider extends ChangeNotifier {
     bool hasUpdates = false;
     final now = DateTime.now();
 
-    // Map p1-p6 and t1-t5 to Right foot zones
+    // Map p1-p6 to s1-s6
     final zones = [
-      SensorZone.heel,
-      SensorZone.ball,
-      SensorZone.toe,
-      SensorZone.oppositeHeel,
-      SensorZone.oppositeBall,
-      SensorZone.oppositeToe,
+      SensorZone.s1, // p1
+      SensorZone.s2, // p2
+      SensorZone.s3, // p3
+      SensorZone.s4, // p4
+      SensorZone.s5, // p5
+      SensorZone.s6, // p6
     ];
 
     for (int i = 0; i < 6; i++) {
       final pKey = 'p${i + 1}';
-      final tKey = 't${i + 1}';
+      // Temperature keys: t1..t4 map to s1..s4. s5 has no temp. t5 maps to s6.
+      String tKey = '';
+      if (i < 4) {
+        tKey = 't${i + 1}';
+      } else if (i == 5) {
+        tKey = 't5';
+      }
 
-      if (data.containsKey(pKey) || data.containsKey(tKey)) {
+      bool hasP = data.containsKey(pKey);
+      bool hasT = tKey.isNotEmpty && data.containsKey(tKey);
+
+      if (hasP || hasT) {
         final pVal = data[pKey];
         final tVal = data[tKey];
 
-        final p = pVal is num ? pVal.toDouble() : double.tryParse(pVal.toString()) ?? 0.0;
-        final t = tVal is num ? tVal.toDouble() : double.tryParse(tVal.toString()) ?? 0.0;
+        final p = pVal is num ? pVal.toDouble() : double.tryParse(pVal?.toString() ?? '') ?? 0.0;
+        final t = tVal is num ? tVal.toDouble() : double.tryParse(tVal?.toString() ?? '') ?? 0.0;
 
         final reading = SensorReading(
-          side: DeviceSide.right, // Map to right foot as the canonical foot in UI
+          side: DeviceSide.right, // Assuming Right foot as canonical, but should map according to your app logic. If your app expects both sides, ensure Firebase provides side info.
           zone: zones[i],
           pressure: p,
           temperature: t,
@@ -193,6 +202,13 @@ class SensorDataProvider extends ChangeNotifier {
         );
 
         _latestReadings[DeviceSide.right]![zones[i]] = reading;
+        _latestReadings[DeviceSide.left]![zones[i]] = SensorReading(
+          side: DeviceSide.left,
+          zone: zones[i],
+          pressure: p,
+          temperature: t,
+          timestamp: now,
+        ); // Mirroring right foot data to left foot as well since Firebase doesn't distinguish sides yet
         _repository.insertReading(reading);
         hasUpdates = true;
       }
@@ -200,29 +216,30 @@ class SensorDataProvider extends ChangeNotifier {
     
     if (hasUpdates) {
       _lastUpdateTime[DeviceSide.right] = now;
+      _lastUpdateTime[DeviceSide.left] = now;
       notifyListeners();
     }
   }
 
   List<double>? getPressures(DeviceSide side) {
     return [
-      _latestReadings[side]?[SensorZone.heel]?.pressure ?? 0.0,
-      _latestReadings[side]?[SensorZone.ball]?.pressure ?? 0.0,
-      _latestReadings[side]?[SensorZone.toe]?.pressure ?? 0.0,
-      _latestReadings[side]?[SensorZone.oppositeHeel]?.pressure ?? 0.0,
-      _latestReadings[side]?[SensorZone.oppositeBall]?.pressure ?? 0.0,
-      _latestReadings[side]?[SensorZone.oppositeToe]?.pressure ?? 0.0,
+      _latestReadings[side]?[SensorZone.s1]?.pressure ?? 0.0,
+      _latestReadings[side]?[SensorZone.s2]?.pressure ?? 0.0,
+      _latestReadings[side]?[SensorZone.s3]?.pressure ?? 0.0,
+      _latestReadings[side]?[SensorZone.s4]?.pressure ?? 0.0,
+      _latestReadings[side]?[SensorZone.s5]?.pressure ?? 0.0,
+      _latestReadings[side]?[SensorZone.s6]?.pressure ?? 0.0,
     ];
   }
 
   List<double>? getTemperatures(DeviceSide side) {
     return [
-      _latestReadings[side]?[SensorZone.heel]?.temperature ?? 0.0,
-      _latestReadings[side]?[SensorZone.ball]?.temperature ?? 0.0,
-      _latestReadings[side]?[SensorZone.toe]?.temperature ?? 0.0,
-      _latestReadings[side]?[SensorZone.oppositeHeel]?.temperature ?? 0.0,
-      _latestReadings[side]?[SensorZone.oppositeBall]?.temperature ?? 0.0,
-      _latestReadings[side]?[SensorZone.oppositeToe]?.temperature ?? 0.0,
+      _latestReadings[side]?[SensorZone.s1]?.temperature ?? 0.0,
+      _latestReadings[side]?[SensorZone.s2]?.temperature ?? 0.0,
+      _latestReadings[side]?[SensorZone.s3]?.temperature ?? 0.0,
+      _latestReadings[side]?[SensorZone.s4]?.temperature ?? 0.0,
+      0.0, // s5 has no temperature
+      _latestReadings[side]?[SensorZone.s6]?.temperature ?? 0.0,
     ];
   }
 
@@ -232,15 +249,16 @@ class SensorDataProvider extends ChangeNotifier {
     if (leftT == null || rightT == null) return null;
 
     final zoneNames = [
-      'Heel',
-      'Ball',
-      'Toe',
-      'Opposite Heel',
-      'Opposite Ball',
-      'Opposite Toe',
+      'S1 (Inner Toe)',
+      'S2 (Inner Ball)',
+      'S3 (Middle Ball)',
+      'S4 (Outer Ball)',
+      'S5 (Midfoot)',
+      'S6 (Heel)',
     ];
 
     for (int i = 0; i < 6; i++) {
+      if (i == 4) continue; // S5 has no temperature
       if (leftT[i] <= 0 || rightT[i] <= 0) continue;
       final diff = (leftT[i] - rightT[i]).abs();
       if (diff >= 2.0) {
@@ -256,12 +274,12 @@ class SensorDataProvider extends ChangeNotifier {
       final p = getPressures(side);
       if (p == null) continue;
       final highZones = <SensorZone>[];
-      if (p[0] > threshold) highZones.add(SensorZone.heel);
-      if (p[1] > threshold) highZones.add(SensorZone.ball);
-      if (p[2] > threshold) highZones.add(SensorZone.toe);
-      if (p[3] > threshold) highZones.add(SensorZone.oppositeHeel);
-      if (p[4] > threshold) highZones.add(SensorZone.oppositeBall);
-      if (p[5] > threshold) highZones.add(SensorZone.oppositeToe);
+      if (p[0] > threshold) highZones.add(SensorZone.s1);
+      if (p[1] > threshold) highZones.add(SensorZone.s2);
+      if (p[2] > threshold) highZones.add(SensorZone.s3);
+      if (p[3] > threshold) highZones.add(SensorZone.s4);
+      if (p[4] > threshold) highZones.add(SensorZone.s5);
+      if (p[5] > threshold) highZones.add(SensorZone.s6);
       if (highZones.isNotEmpty) return HighPressureAlert(side, highZones);
     }
     return null;
