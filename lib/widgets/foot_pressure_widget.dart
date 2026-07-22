@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class FootPressureWidget extends StatelessWidget {
+class FootPressureWidget extends StatefulWidget {
   final double pressureLeftS1;
   final double pressureLeftS2;
   final double pressureLeftS3;
@@ -54,60 +54,69 @@ class FootPressureWidget extends StatelessWidget {
   });
 
   @override
+  State<FootPressureWidget> createState() => _FootPressureWidgetState();
+}
+
+class _FootPressureWidgetState extends State<FootPressureWidget> {
+  String _selectedFoot = "Right";
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Center(
-          child: Container(
-            height: 380, // Taller overall height for great proportions
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Left Foot (Mirrored Right Foot Image)
-                Flexible(
-                  child: Transform.scale(
-                    scaleX: -1.0,
-                    alignment: Alignment.center,
-                    child: FootImageWidget(
-                      footSide: "Left",
-                      pressureS1: pressureLeftS1,
-                      pressureS2: pressureLeftS2,
-                      pressureS3: pressureLeftS3,
-                      pressureS4: pressureLeftS4,
-                      pressureS5: pressureLeftS5,
-                      pressureS6: pressureLeftS6,
-                      tempS1: tempLeftS1,
-                      tempS2: tempLeftS2,
-                      tempS3: tempLeftS3,
-                      tempS4: tempLeftS4,
-                      tempS6: tempLeftS6,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 40), // Generous central spacing
-                // Right Foot
-                Flexible(
-                  child: FootImageWidget(
-                    footSide: "Right",
-                    pressureS1: pressureRightS1,
-                    pressureS2: pressureRightS2,
-                    pressureS3: pressureRightS3,
-                    pressureS4: pressureRightS4,
-                    pressureS5: pressureRightS5,
-                    pressureS6: pressureRightS6,
-                    tempS1: tempRightS1,
-                    tempS2: tempRightS2,
-                    tempS3: tempRightS3,
-                    tempS4: tempRightS4,
-                    tempS6: tempRightS6,
-                  ),
-                ),
-              ],
+        _buildFootSelector(),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left side: Values
+            Expanded(
+              flex: 5,
+              child: _buildValuesList(),
             ),
-          ),
+            const SizedBox(width: 8),
+            // Right side: Image
+            Expanded(
+              flex: 5,
+              child: SizedBox(
+                height: 380,
+                child: _selectedFoot == "Left"
+                    ? Transform.scale(
+                        scaleX: -1.0,
+                        alignment: Alignment.center,
+                        child: FootImageWidget(
+                          footSide: "Left",
+                          pressureS1: widget.pressureLeftS1,
+                          pressureS2: widget.pressureLeftS2,
+                          pressureS3: widget.pressureLeftS3,
+                          pressureS4: widget.pressureLeftS4,
+                          pressureS5: widget.pressureLeftS5,
+                          pressureS6: widget.pressureLeftS6,
+                          tempS1: widget.tempLeftS1,
+                          tempS2: widget.tempLeftS2,
+                          tempS3: widget.tempLeftS3,
+                          tempS4: widget.tempLeftS4,
+                          tempS6: widget.tempLeftS6,
+                        ),
+                      )
+                    : FootImageWidget(
+                        footSide: "Right",
+                        pressureS1: widget.pressureRightS1,
+                        pressureS2: widget.pressureRightS2,
+                        pressureS3: widget.pressureRightS3,
+                        pressureS4: widget.pressureRightS4,
+                        pressureS5: widget.pressureRightS5,
+                        pressureS6: widget.pressureRightS6,
+                        tempS1: widget.tempRightS1,
+                        tempS2: widget.tempRightS2,
+                        tempS3: widget.tempRightS3,
+                        tempS4: widget.tempRightS4,
+                        tempS6: widget.tempRightS6,
+                      ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 24),
         _buildLegend(),
@@ -117,11 +126,158 @@ class FootPressureWidget extends StatelessWidget {
     );
   }
 
+  Widget _buildFootSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildFootTab("Left"),
+          _buildFootTab("Right"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFootTab(String side) {
+    bool isSelected = _selectedFoot == side;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFoot = side;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: isSelected
+              ? const [BoxShadow(color: Colors.black12, blurRadius: 4)]
+              : [],
+        ),
+        child: Text(
+          "$side Foot",
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? Colors.black87 : Colors.grey.shade600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildValuesList() {
+    return Column(
+      children: [
+        _buildValueCard("1", "Toe",
+            _selectedFoot == "Left" ? widget.pressureLeftS1 : widget.pressureRightS1,
+            _selectedFoot == "Left" ? widget.tempLeftS1 : widget.tempRightS1),
+        _buildValueCard("2", "Inner Ball",
+            _selectedFoot == "Left" ? widget.pressureLeftS2 : widget.pressureRightS2,
+            _selectedFoot == "Left" ? widget.tempLeftS2 : widget.tempRightS2),
+        _buildValueCard("3", "Mid Ball",
+            _selectedFoot == "Left" ? widget.pressureLeftS3 : widget.pressureRightS3,
+            _selectedFoot == "Left" ? widget.tempLeftS3 : widget.tempRightS3),
+        _buildValueCard("4", "Outer Ball",
+            _selectedFoot == "Left" ? widget.pressureLeftS4 : widget.pressureRightS4,
+            _selectedFoot == "Left" ? widget.tempLeftS4 : widget.tempRightS4),
+        _buildValueCard("5", "Midfoot",
+            _selectedFoot == "Left" ? widget.pressureLeftS5 : widget.pressureRightS5,
+            null),
+        _buildValueCard("6", "Heel",
+            _selectedFoot == "Left" ? widget.pressureLeftS6 : widget.pressureRightS6,
+            _selectedFoot == "Left" ? widget.tempLeftS6 : widget.tempRightS6),
+      ],
+    );
+  }
+
+  Widget _buildValueCard(String number, String label, double pressure, double? temp) {
+    bool isHotspot = pressure >= 70.0;
+    bool isHotTemp = temp != null && temp > 37.5;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.blue.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade900,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.circle, size: 8, color: isHotspot ? Colors.red : Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${pressure.toStringAsFixed(1)} kPa",
+                      style: TextStyle(fontSize: 10, color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+                if (temp != null)
+                  Row(
+                    children: [
+                      Icon(Icons.star, size: 8, color: isHotTemp ? Colors.red : Colors.orange),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${temp.toStringAsFixed(1)} °C",
+                        style: TextStyle(fontSize: 10, color: Colors.grey.shade700),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHealthAnalysis() {
     // Determine absolute temperature differences between corresponding points
-    double diffS1 = (tempLeftS1 - tempRightS1).abs();
-    double diffS3 = (tempLeftS3 - tempRightS3).abs();
-    double diffS6 = (tempLeftS6 - tempRightS6).abs();
+    double diffS1 = (widget.tempLeftS1 - widget.tempRightS1).abs();
+    double diffS3 = (widget.tempLeftS3 - widget.tempRightS3).abs();
+    double diffS6 = (widget.tempLeftS6 - widget.tempRightS6).abs();
 
     String status(double diff) =>
         diff > 2.0 ? "Temperature Abnormal" : "Temperature Normal";
@@ -502,8 +658,8 @@ class FootImageWidget extends StatelessWidget {
                 const SizedBox(height: 14), // Spacer for missing temp icon
               const SizedBox(height: 2),
               Container(
-                width: 14,
-                height: 14,
+                width: 20,
+                height: 20,
                 decoration: BoxDecoration(
                   color: pressureColor,
                   shape: BoxShape.circle,
@@ -515,6 +671,19 @@ class FootImageWidget extends StatelessWidget {
                       offset: Offset(0, 1),
                     ),
                   ],
+                ),
+                child: Center(
+                  child: Transform.scale(
+                    scaleX: footSide == "Left" ? -1.0 : 1.0,
+                    child: Text(
+                      pointName.substring(1, 2),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
