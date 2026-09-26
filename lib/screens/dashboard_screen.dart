@@ -66,8 +66,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const SyncCard(),
             const SizedBox(height: 24),
             _buildActiveAnalysisCard(),
-            const SizedBox(height: 24),
-            _buildMedicalInsightCard(),
           ],
         ),
       ),
