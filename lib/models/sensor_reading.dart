@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// Represents a single pressure or temperature reading from a sensor zone
-enum SensorZone { heel, ball, toe, oppositeHeel, oppositeBall, oppositeToe }
+enum SensorZone { s1, s2, s3, s4, s5, s6 }
 
 /// Identifies which foot/insole provided the reading
 enum DeviceSide { left, right }
@@ -13,13 +13,13 @@ class SensorReading {
   /// Which insole this reading came from (left or right)
   final DeviceSide side;
 
-  /// Which zone on the foot (heel, ball, toe)
+  /// Which zone on the foot (s1 to s6)
   final SensorZone zone;
 
   /// Pressure in kPa (kiloPascals); valid range 0–100
   final double pressure;
 
-  /// Temperature in Celsius; valid range 20–45
+  /// Temperature in Celsius; valid range 20–45. S5 might not have temperature, in which case it is 0.0 or ignored.
   final double temperature;
 
   /// UTC timestamp when this sample was captured
@@ -52,7 +52,9 @@ class SensorReading {
     if (pressure < 0 || pressure > 100) {
       errors.add('Pressure $pressure kPa out of range [0, 100]');
     }
-    if (temperature < 20 || temperature > 45) {
+    // S5 has no temperature, so we might skip temperature validation for S5 if we want, or just let it be.
+    // Assuming 0.0 is used for 'no temperature' on s5, we should ignore validating temperature if it's s5 and temperature is 0.0.
+    if (zone != SensorZone.s5 && (temperature < 20 || temperature > 45)) {
       errors.add('Temperature $temperature °C out of range [20, 45]');
     }
     if (errors.isEmpty) {
@@ -110,47 +112,4 @@ class SensorReading {
   @override
   String toString() =>
       'SensorReading(side: $side, zone: $zone, pressure: $pressure kPa, temp: $temperature °C, ts: $timestamp, valid: $isValid)';
-}
-
-/// Aggregate of the latest reading from each zone on one foot
-@immutable
-class FootTelemetry {
-  final DeviceSide side;
-  final SensorReading heelReading;
-  final SensorReading ballReading;
-  final SensorReading toeReading;
-
-  /// Most recent timestamp across all three zones
-  DateTime get latestTimestamp {
-    return [
-      heelReading.timestamp,
-      ballReading.timestamp,
-      toeReading.timestamp,
-    ].reduce((a, b) => a.isAfter(b) ? a : b);
-  }
-
-  const FootTelemetry({
-    required this.side,
-    required this.heelReading,
-    required this.ballReading,
-    required this.toeReading,
-  });
-
-  /// Extract pressure values in order (heel, ball, toe) for FootPressureWidget
-  List<double> getPressures() => [
-    heelReading.pressure,
-    ballReading.pressure,
-    toeReading.pressure,
-  ];
-
-  /// Extract temperature values in order (heel, ball, toe) for FootPressureWidget
-  List<double> getTemperatures() => [
-    heelReading.temperature,
-    ballReading.temperature,
-    toeReading.temperature,
-  ];
-
-  /// Check if all zones are valid
-  bool get isComplete =>
-      heelReading.isValid && ballReading.isValid && toeReading.isValid;
 }

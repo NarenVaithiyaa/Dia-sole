@@ -378,7 +378,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     double maxY = 100;
     if (spots.isNotEmpty) {
       final maxVal = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
-      maxY = (maxVal * 1.2).clamp(10, 200);
+      maxY = (maxVal * 1.2).clamp(10, 10000);
     }
 
     return Container(
@@ -440,6 +440,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 maxX: (spots.length - 1).toDouble().clamp(0, double.infinity),
                 minY: 0,
                 maxY: maxY,
+                clipData: const FlClipData.all(),
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
@@ -486,8 +487,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     if (spots.isNotEmpty) {
       final minVal = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
       final maxVal = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
-      minY = (minVal - 1).clamp(20, 40);
-      maxY = (maxVal + 1).clamp(35, 45);
+      minY = (minVal - 1).clamp(0, 40);
+      maxY = (maxVal + 1).clamp(35, 100);
     }
 
     return Container(
@@ -549,6 +550,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 maxX: (_logEntries.length - 1).toDouble().clamp(0, double.infinity),
                 minY: minY,
                 maxY: maxY,
+                clipData: const FlClipData.all(),
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
@@ -611,7 +613,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     double maxY = 100;
     if (avgPressures.isNotEmpty) {
       final maxVal = avgPressures.reduce((a, b) => a > b ? a : b);
-      maxY = maxVal > 0 ? (maxVal * 1.3).clamp(10, 200) : 100;
+      maxY = maxVal > 0 ? (maxVal * 1.3).clamp(10, 10000) : 100;
     }
 
     return Container(
@@ -626,6 +628,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
           maxY: maxY,
+          // Note: fl_chart BarChartData might not support clipData directly, but setting maxY correctly solves the overflow.
           barTouchData: BarTouchData(
             touchTooltipData: BarTouchTooltipData(
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
