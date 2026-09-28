@@ -38,6 +38,45 @@ class _LogEntry {
     return count > 0 ? sum / count : 0;
   }
 
+  /// Get maximum pressure anomaly (red point) in this entry.
+  /// Pressure anomaly is >= 70.0 kPa.
+  double? get maxPressureAnomaly {
+    double maxVal = -1;
+    final zones = sideData['right'] ?? {};
+    for (final entry in zones.entries) {
+      if (entry.key.endsWith('_pressure')) {
+        if (entry.value >= 70.0) {
+          if (entry.value > maxVal) maxVal = entry.value;
+        }
+      }
+    }
+    return maxVal != -1 ? maxVal : null;
+  }
+
+  /// Get maximum temperature anomaly (red point) in this entry.
+  /// Temperature anomaly is defined as a difference >= 2.0°C between corresponding zones.
+  /// Returns the maximum temperature value among the anomalous zones.
+  double? get maxTempAnomaly {
+    double maxVal = -1;
+    final zones = sideData['right'] ?? {};
+    final pairs = [
+      ['heel', 'oppositeHeel'],
+      ['ball', 'oppositeBall'],
+      ['toe', 'oppositeToe'],
+    ];
+    for (final pair in pairs) {
+      final t1 = zones['${pair[0]}_temperature'];
+      final t2 = zones['${pair[1]}_temperature'];
+      if (t1 != null && t2 != null) {
+        if ((t1 - t2).abs() >= 2.0) {
+          final m = t1 > t2 ? t1 : t2;
+          if (m > maxVal) maxVal = m;
+        }
+      }
+    }
+    return maxVal != -1 ? maxVal : null;
+  }
+
   /// Get average pressure for a specific zone across both sides
   double getZonePressure(String zone) {
     double sum = 0;
@@ -80,6 +119,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   List<_LogEntry> _logEntries = [];
+  String _selectedTab = "Pressure";
 
   @override
   void initState() {
@@ -335,22 +375,70 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
-            _buildSectionTitle("Pressure Trends Over Time"),
-            const SizedBox(height: 16),
-            _buildPressureLineChart(),
+            _buildTabSelector(),
             const SizedBox(height: 24),
-            _buildSectionTitle("Temperature Trends Over Time"),
-            const SizedBox(height: 16),
-            _buildTemperatureLineChart(),
-            const SizedBox(height: 24),
-            _buildSectionTitle("Average Pressure by Zone"),
-            const SizedBox(height: 16),
-            _buildZonePressureBarChart(),
+            if (_selectedTab == "Pressure") ...[
+              _buildSectionTitle("Monthly Pressure Anomalies"),
+              const SizedBox(height: 16),
+              _buildMonthlyAnomalyTrendChart("Pressure"),
+              const SizedBox(height: 24),
+              _buildSectionTitle("Weekly Average Pressure"),
+              const SizedBox(height: 16),
+              _buildWeeklyAverageChart("Pressure"),
+            ] else ...[
+              _buildSectionTitle("Monthly Temperature Anomalies"),
+              const SizedBox(height: 16),
+              _buildMonthlyAnomalyTrendChart("Temperature"),
+              const SizedBox(height: 24),
+              _buildSectionTitle("Weekly Average Temperature"),
+              const SizedBox(height: 16),
+              _buildWeeklyAverageChart("Temperature"),
+            ],
             const SizedBox(height: 24),
             _buildSectionTitle("Data Summary"),
             const SizedBox(height: 16),
             _buildSummaryCard(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabSelector() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildTabButton("Pressure")),
+          Expanded(child: _buildTabButton("Temperature")),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String title) {
+    final isSelected = _selectedTab == title;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTab = title),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected ? [const BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))] : null,
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: isSelected ? AppTheme.primaryBlue : AppTheme.textSecondary,
+            ),
+          ),
         ),
       ),
     );
@@ -367,258 +455,120 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  /// Line chart showing average pressure over historical entries
-  Widget _buildPressureLineChart() {
-    final spots = <FlSpot>[];
-    for (int i = 0; i < _logEntries.length; i++) {
-      spots.add(FlSpot(i.toDouble(), _logEntries[i].avgPressure));
-    }
+  /// Line chart showing monthly anomaly trends
+  Widget _buildMonthlyAnomalyTrendChart(String type) {
+    final Map<int, double> monthlyMax = {};
+    for (final entry in _logEntries) {
+      double? anomaly = type == "Pressure" ? entry.maxPressureAnomaly : entry.maxTempAnomaly;
+      if (anomaly != null) {
+        // Cap values to prevent chart overflow
+        if (type == "Pressure" && anomaly > 100.0) anomaly = 100.0;
+        if (type == "Temperature" && anomaly > 42.0) anomaly = 42.0;
 
-    // Determine maxY from data
-    double maxY = 100;
-    if (spots.isNotEmpty) {
-      final maxVal = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
-      maxY = (maxVal * 1.2).clamp(10, 10000);
-    }
-
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: spots.isEmpty
-          ? const Center(child: Text('No pressure data', style: TextStyle(color: AppTheme.textSecondary)))
-          : LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: maxY / 5,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.shade200,
-                    strokeWidth: 1,
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: (_logEntries.length / 6).ceilToDouble().clamp(1, double.infinity),
-                      getTitlesWidget: (value, meta) {
-                        final idx = value.toInt();
-                        if (idx < 0 || idx >= _logEntries.length) return const SizedBox.shrink();
-                        final dt = _logEntries[idx].timestamp;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}',
-                            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 9, fontWeight: FontWeight.bold),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      interval: maxY / 5,
-                      getTitlesWidget: (value, meta) => Text(
-                        value.toStringAsFixed(0),
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10),
-                      ),
-                    ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: (spots.length - 1).toDouble().clamp(0, double.infinity),
-                minY: 0,
-                maxY: maxY,
-                clipData: const FlClipData.all(),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: AppTheme.primaryBlue,
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(show: spots.length <= 20),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: AppTheme.primaryBlue.withValues(alpha: 0.1),
-                    ),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipItems: (touchedSpots) {
-                      return touchedSpots.map((spot) {
-                        return LineTooltipItem(
-                          '${spot.y.toStringAsFixed(1)} kPa',
-                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                        );
-                      }).toList();
-                    },
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-
-  /// Line chart showing average temperature over historical entries
-  Widget _buildTemperatureLineChart() {
-    final spots = <FlSpot>[];
-    for (int i = 0; i < _logEntries.length; i++) {
-      final avgTemp = _logEntries[i].avgTemperature;
-      if (avgTemp > 0) {
-        spots.add(FlSpot(i.toDouble(), avgTemp));
-      }
-    }
-
-    double minY = 30;
-    double maxY = 42;
-    if (spots.isNotEmpty) {
-      final minVal = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
-      final maxVal = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
-      minY = (minVal - 1).clamp(0, 40);
-      maxY = (maxVal + 1).clamp(35, 100);
-    }
-
-    return Container(
-      height: 300,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: AppTheme.softShadow,
-      ),
-      child: spots.isEmpty
-          ? const Center(child: Text('No temperature data', style: TextStyle(color: AppTheme.textSecondary)))
-          : LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: (maxY - minY) / 5,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey.shade200,
-                    strokeWidth: 1,
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      interval: (_logEntries.length / 6).ceilToDouble().clamp(1, double.infinity),
-                      getTitlesWidget: (value, meta) {
-                        final idx = value.toInt();
-                        if (idx < 0 || idx >= _logEntries.length) return const SizedBox.shrink();
-                        final dt = _logEntries[idx].timestamp;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}',
-                            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 9, fontWeight: FontWeight.bold),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      interval: (maxY - minY) / 5,
-                      getTitlesWidget: (value, meta) => Text(
-                        '${value.toStringAsFixed(1)}°',
-                        style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10),
-                      ),
-                    ),
-                  ),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                minX: 0,
-                maxX: (_logEntries.length - 1).toDouble().clamp(0, double.infinity),
-                minY: minY,
-                maxY: maxY,
-                clipData: const FlClipData.all(),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    isCurved: true,
-                    color: Colors.deepOrange,
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(show: spots.length <= 20),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: Colors.deepOrange.withValues(alpha: 0.1),
-                    ),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipItems: (touchedSpots) {
-                      return touchedSpots.map((spot) {
-                        return LineTooltipItem(
-                          '${spot.y.toStringAsFixed(1)} °C',
-                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                        );
-                      }).toList();
-                    },
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-
-  /// Bar chart showing average pressure per zone across all logs
-  Widget _buildZonePressureBarChart() {
-    final zones = ['heel', 'ball', 'toe', 'oppositeHeel', 'oppositeBall', 'oppositeToe'];
-    final zoneLabels = ['Heel', 'Ball', 'Toe', 'Op.Heel', 'Op.Ball', 'Op.Toe'];
-    final zoneColors = [
-      Colors.redAccent,
-      Colors.blueAccent,
-      Colors.orangeAccent,
-      Colors.red.shade300,
-      Colors.blue.shade300,
-      Colors.orange.shade300,
-    ];
-
-    // Calculate average pressure for each zone across all entries
-    final avgPressures = <double>[];
-    for (final zone in zones) {
-      double sum = 0;
-      int count = 0;
-      for (final entry in _logEntries) {
-        final val = entry.getZonePressure(zone);
-        if (val > 0) {
-          sum += val;
-          count++;
+        final month = entry.timestamp.month;
+        if (!monthlyMax.containsKey(month) || anomaly > monthlyMax[month]!) {
+          monthlyMax[month] = anomaly;
         }
       }
-      avgPressures.add(count > 0 ? sum / count : 0);
     }
 
-    double maxY = 100;
-    if (avgPressures.isNotEmpty) {
-      final maxVal = avgPressures.reduce((a, b) => a > b ? a : b);
-      maxY = maxVal > 0 ? (maxVal * 1.3).clamp(10, 10000) : 100;
+    final spots = <FlSpot>[];
+    for (int i = 1; i <= 12; i++) {
+      if (monthlyMax.containsKey(i)) {
+        spots.add(FlSpot(i.toDouble(), monthlyMax[i]!));
+      }
     }
+
+    final monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final color = type == "Pressure" ? AppTheme.primaryBlue : Colors.deepOrange;
+    final maxY = type == "Pressure" ? 100.0 : 42.0;
+    final minY = type == "Pressure" ? 0.0 : 30.0;
 
     return Container(
       height: 300,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(12, 24, 24, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: spots.isEmpty
+          ? Center(child: Text('No $type anomalies detected', style: const TextStyle(color: AppTheme.textSecondary)))
+          : LineChart(
+              LineChartData(
+                clipData: const FlClipData.all(),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.shade100, strokeWidth: 1),
+                ),
+                titlesData: FlTitlesData(
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt() - 1;
+                        if (idx < 0 || idx >= 12) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(monthLabels[idx], style: const TextStyle(color: AppTheme.textSecondary, fontSize: 9, fontWeight: FontWeight.bold)),
+                        );
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 35,
+                      getTitlesWidget: (value, meta) => Text(value.toStringAsFixed(0), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 10)),
+                    ),
+                  ),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                borderData: FlBorderData(show: false),
+                minX: 1,
+                maxX: 12,
+                minY: minY,
+                maxY: maxY,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: color,
+                    barWidth: 4,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: true),
+                    belowBarData: BarAreaData(show: true, color: color.withValues(alpha: 0.1)),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  /// Bar chart showing weekly averages
+  Widget _buildWeeklyAverageChart(String type) {
+    final Map<int, List<double>> weeklyData = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []};
+    for (final entry in _logEntries) {
+      double val = type == "Pressure" ? entry.avgPressure : entry.avgTemperature;
+      if (val > 0) {
+        // Cap values to prevent chart overflow
+        if (type == "Pressure" && val > 100.0) val = 100.0;
+        if (type == "Temperature" && val > 42.0) val = 42.0;
+        
+        weeklyData[entry.timestamp.weekday]!.add(val);
+      }
+    }
+
+    final dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final color = type == "Pressure" ? AppTheme.primaryBlue : Colors.deepOrange;
+    final maxY = type == "Pressure" ? 100.0 : 42.0;
+
+    return Container(
+      height: 300,
+      padding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -628,12 +578,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
           maxY: maxY,
-          // Note: fl_chart BarChartData might not support clipData directly, but setting maxY correctly solves the overflow.
           barTouchData: BarTouchData(
             touchTooltipData: BarTouchTooltipData(
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 return BarTooltipItem(
-                  '${zoneLabels[group.x.toInt()]}\n${rod.toY.toStringAsFixed(1)} kPa',
+                  '${dayLabels[group.x.toInt()]}\n${rod.toY.toStringAsFixed(1)} ${type == "Pressure" ? 'kPa' : '°C'}',
                   const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                 );
               },
@@ -645,17 +594,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 showTitles: true,
                 getTitlesWidget: (value, meta) {
                   final idx = value.toInt();
-                  if (idx >= 0 && idx < zoneLabels.length) {
+                  if (idx >= 0 && idx < 7) {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        zoneLabels[idx],
-                        style: const TextStyle(
-                          color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 9,
-                        ),
-                      ),
+                      child: Text(dayLabels[idx], style: const TextStyle(color: AppTheme.textSecondary, fontWeight: FontWeight.bold, fontSize: 10)),
                     );
                   }
                   return const SizedBox.shrink();
@@ -668,14 +610,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
-          barGroups: List.generate(zones.length, (i) {
+          barGroups: List.generate(7, (i) {
+            final weekday = i + 1;
+            final data = weeklyData[weekday]!;
+            final avg = data.isEmpty ? 0.0 : data.reduce((a, b) => a + b) / data.length;
             return BarChartGroupData(
               x: i,
               barRods: [
                 BarChartRodData(
-                  toY: avgPressures[i],
-                  color: zoneColors[i],
-                  width: 18,
+                  toY: avg,
+                  color: color,
+                  width: 20,
                   borderRadius: BorderRadius.circular(6),
                 ),
               ],
