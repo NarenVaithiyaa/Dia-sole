@@ -63,11 +63,11 @@ class _SyncCardState extends State<SyncCard> {
     final timeStr = _selectedTime.format(context);
     switch (_selectedType) {
       case SyncType.daily:
-        return 'Sync everyday at $timeStr';
+        return 'Test everyday at $timeStr';
       case SyncType.weekly:
-        return 'Sync every $_selectedDay at $timeStr';
+        return 'Test every $_selectedDay at $timeStr';
       case SyncType.monthly:
-        return 'Sync on the $_selectedDate of every month at $timeStr';
+        return 'Test on the $_selectedDate of every month at $timeStr';
     }
   }
 
@@ -84,7 +84,7 @@ class _SyncCardState extends State<SyncCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Set Sync Schedule",
+            "Set Test Schedule",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -195,7 +195,7 @@ class _SyncCardState extends State<SyncCard> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text(
-                'Save Sync Schedule',
+                'Save Test Schedule',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
